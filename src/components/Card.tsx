@@ -10,6 +10,7 @@ interface CardProps {
   onPress?: () => void;
   padding?: number;
   borderVariant?: 'none' | 'subtle' | 'gradient-accent';
+  hasShadow?: boolean;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -20,6 +21,7 @@ export const Card: React.FC<CardProps> = ({
   onPress,
   padding = 16,
   borderVariant = 'none',
+  hasShadow = true,
 }) => {
   const { colors, shadow } = useTheme();
   const scale = useSharedValue(1);
@@ -65,7 +67,7 @@ export const Card: React.FC<CardProps> = ({
         style={[
           styles.base,
           cardStyle,
-          shadow,
+          hasShadow ? shadow : null,
           style,
           animatedStyle,
         ]}
@@ -76,7 +78,7 @@ export const Card: React.FC<CardProps> = ({
   }
 
   return (
-    <View style={[styles.base, cardStyle, shadow, style]}>
+    <View style={[styles.base, cardStyle, hasShadow ? shadow : null, style]}>
       {children}
     </View>
   );

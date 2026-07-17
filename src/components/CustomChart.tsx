@@ -14,6 +14,9 @@ interface LineChartProps {
   yMin?: number;
   yMax?: number;
   unit?: string;
+  showDataLabels?: boolean;
+  showDataPoints?: boolean;
+  targetLine?: number;
 }
 
 export const LineChart: React.FC<LineChartProps> = ({
@@ -23,6 +26,9 @@ export const LineChart: React.FC<LineChartProps> = ({
   yMin,
   yMax,
   unit = '',
+  showDataLabels = true,
+  showDataPoints = true,
+  targetLine,
 }) => {
   const { colors, brandColors } = useTheme();
   const { width: windowWidth } = useWindowDimensions();
@@ -30,8 +36,13 @@ export const LineChart: React.FC<LineChartProps> = ({
   const chartWidth = windowWidth - 64; // matches parent card padding
 
   // Calculate limits
-  const maxVal = yMax !== undefined ? yMax : Math.max(...data, 1) * 1.1;
-  const minVal = yMin !== undefined ? yMin : Math.min(...data, 0) * 0.9;
+  const actualMax = data.length > 0 ? Math.max(...data) : 1;
+  const actualMin = data.length > 0 ? Math.min(...data) : 0;
+  const diff = actualMax - actualMin;
+  const paddingY = diff === 0 ? 0.5 : diff * 0.2;
+
+  const maxVal = yMax !== undefined ? yMax : actualMax + paddingY;
+  const minVal = yMin !== undefined ? yMin : actualMin - paddingY;
   const valRange = maxVal - minVal || 1;
 
   // Animation values
@@ -131,37 +142,62 @@ export const LineChart: React.FC<LineChartProps> = ({
           strokeWidth={3}
         />
 
+        {/* Target/Average Line (e.g. BBT Coverline) */}
+        {targetLine !== undefined && (
+          <Line
+            x1={padding}
+            y1={height - padding - ((targetLine - minVal) / valRange) * (height - padding * 2)}
+            x2={chartWidth - padding}
+            y2={height - padding - ((targetLine - minVal) / valRange) * (height - padding * 2)}
+            stroke={brandColors.accentDark}
+            strokeWidth={1.5}
+            strokeDasharray="6 4"
+          />
+        )}
+
         {/* Data Point Circles */}
-        {points.map((p, idx) => (
+        {showDataPoints && points.map((p, idx) => (
           <React.Fragment key={idx}>
             <Circle
               cx={p.x}
               cy={p.y}
-              r={5}
+              r={data.length > 15 ? 2.5 : 5}
               fill={colors.surface}
               stroke={brandColors.primaryDark}
-              strokeWidth={2}
+              strokeWidth={data.length > 15 ? 1 : 2}
             />
             {/* Value Labels above points */}
-            <Text
-              style={[
-                styles.pointLabel,
-                { left: p.x - 12, top: p.y - 18, color: colors.text },
-              ]}
-            >
-              {p.value}
-            </Text>
+            {showDataLabels && (
+              <Text
+                style={[
+                  styles.pointLabel,
+                  { left: p.x - 12, top: p.y - 18, color: colors.text },
+                ]}
+              >
+                {p.value}
+              </Text>
+            )}
           </React.Fragment>
         ))}
       </Svg>
 
       {/* X Axis Labels */}
-      <View style={[styles.xAxisRow, { paddingHorizontal: padding }]}>
-        {labels.map((label, idx) => (
-          <Text key={idx} style={[styles.xAxisText, { color: colors.textSecondary }]}>
-            {label}
-          </Text>
-        ))}
+      <View style={[styles.xAxisRow, { height: 20 }]}>
+        {labels.map((label, idx) => {
+          if (!label) return null;
+          const x = padding + (idx / (labels.length - 1 || 1)) * (chartWidth - padding * 2);
+          return (
+            <Text 
+              key={idx} 
+              style={[
+                styles.xAxisText, 
+                { color: colors.textSecondary, position: 'absolute', left: x - 25, width: 50 }
+              ]}
+            >
+              {label}
+            </Text>
+          );
+        })}
       </View>
     </View>
   );
@@ -181,6 +217,17 @@ export const BarChart: React.FC<BarChartProps> = ({ data, maxVal, height = 150 }
 
   return (
     <View style={styles.barChartContainer}>
+      {/* Background Grid */}
+      <View style={[StyleSheet.absoluteFill, { paddingBottom: 24, paddingTop: 10 }]}>
+        {[1, 0.5, 0].map((ratio, i) => (
+          <View key={i} style={{ position: 'absolute', top: `${(1 - ratio) * 100}%`, width: '100%', borderTopWidth: 1, borderTopColor: colors.border, borderStyle: 'dashed', opacity: 0.5 }}>
+            <Text style={{ position: 'absolute', left: 0, top: -14, fontSize: 9, color: colors.textSecondary, fontWeight: '600' }}>
+              {Math.round(max * ratio)}
+            </Text>
+          </View>
+        ))}
+      </View>
+
       <View style={[styles.barsRow, { height }]}>
         {data.map((item, idx) => {
           const barHeightRatio = Math.min(item.count / max, 1);
@@ -219,7 +266,7 @@ export const BarChart: React.FC<BarChartProps> = ({ data, maxVal, height = 150 }
               </View>
               <Text style={[styles.barValueText, { color: colors.text }]}>{item.count}</Text>
               <Text
-                numberOfLines={1}
+                numberOfLines={2}
                 style={[styles.barLabelText, { color: colors.textSecondary }]}
               >
                 {item.label}
@@ -251,13 +298,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   xAxisRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     width: '100%',
     marginTop: 6,
+    position: 'relative',
   },
   xAxisText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
     textAlign: 'center',
   },
@@ -275,21 +321,21 @@ const styles = StyleSheet.create({
   },
   barCol: {
     alignItems: 'center',
-    width: '20%',
+    width: '22%',
     height: '100%',
     justifyContent: 'flex-end',
   },
   barTrack: {
-    width: 14,
+    width: 28,
     height: '80%',
     backgroundColor: '#FAF6FC',
-    borderRadius: 7,
+    borderRadius: 8,
     overflow: 'hidden',
     justifyContent: 'flex-end',
   },
   barFill: {
     width: '100%',
-    borderRadius: 7,
+    borderRadius: 8,
   },
   barValueText: {
     fontSize: 11,

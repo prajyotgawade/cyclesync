@@ -121,11 +121,20 @@ export const InsightsScreen = () => {
 
     // Sub-sample or limit labels to avoid overlap
     const step = Math.ceil(labels.length / 5) || 1;
-    const cleanLabels = labels.filter((_, idx) => idx % step === 0);
+    const cleanLabels = labels.map((lbl, idx) => (idx % step === 0 ? lbl : ''));
+
+    // Coverline (average of first 14 days, commonly used as a baseline to detect ovulation shift)
+    let coverline: number | undefined;
+    if (data.length >= 5) {
+      const follicularTemps = data.slice(0, 14);
+      const sum = follicularTemps.reduce((a, b) => a + b, 0);
+      coverline = sum / follicularTemps.length;
+    }
 
     return {
       data,
-      labels: cleanLabels.slice(-6),
+      labels: cleanLabels,
+      coverline,
     };
   };
 
@@ -179,9 +188,9 @@ export const InsightsScreen = () => {
               <LineChart
                 data={bbtTrend.data}
                 labels={bbtTrend.labels}
-                yMin={35.8}
-                yMax={37.2}
                 unit="°"
+                showDataLabels={false}
+                targetLine={bbtTrend.coverline}
               />
             ) : (
               <View style={styles.emptyChartContainer}>

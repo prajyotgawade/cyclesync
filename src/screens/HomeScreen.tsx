@@ -133,7 +133,7 @@ export const HomeScreen = ({ navigation }: any) => {
         {/* Demo Data Seeder Banner */}
         {showSeedBanner && (
           <Pressable onPress={handleSeedPress} style={styles.seedBannerPressable}>
-            <Card style={[styles.seedBanner, { backgroundColor: brandColors.primary + '15', borderColor: brandColors.primary }]}>
+            <Card hasShadow={false} style={[styles.seedBanner, { backgroundColor: brandColors.primary + '15', borderColor: brandColors.primary }]}>
               <View style={styles.seedBannerRow}>
                 <Ionicons name="sparkles" size={20} color={brandColors.primaryDark} />
                 <View style={styles.seedBannerTextWrapper}>
@@ -191,9 +191,9 @@ export const HomeScreen = ({ navigation }: any) => {
         )}
 
         {/* Dynamic Advice/Tip Card */}
-        <Card style={[styles.adviceCard, { backgroundColor: advice.bg }]}>
+        <Card style={styles.adviceCard}>
           <View style={styles.adviceHeader}>
-            <Ionicons name={advice.icon as any} size={22} color={colors.text} style={styles.adviceIcon} />
+            <Ionicons name={advice.icon as any} size={22} color={advice.bg.substring(0, 7)} style={styles.adviceIcon} />
             <Text style={[styles.adviceTitle, { color: colors.text }]}>{advice.title}</Text>
           </View>
           <Text style={[styles.adviceText, { color: colors.textSecondary }]}>{advice.text}</Text>
@@ -284,7 +284,8 @@ const styles = StyleSheet.create({
   },
   adviceCard: {
     marginTop: 12,
-    borderWidth: 0,
+    borderWidth: 1,
+    borderStyle: 'dotted',
   },
   adviceHeader: {
     flexDirection: 'row',
