@@ -14,7 +14,7 @@ export const COLORS = {
   ovulation: '#A8DADC',   // Soft mint teal
   luteal: '#F2CC8F',      // Soft warm sandy-yellow
 
-  // Core Neutrals - Light Mode
+  // Core Neutrals & Context-Aware Brands - Light Mode
   light: {
     background: '#FAF8FC',
     surface: '#FFFFFF',
@@ -25,19 +25,33 @@ export const COLORS = {
     shadow: '#000000',
     card: '#FFFFFF',
     tint: '#7C4DFF',
+    // Light mode brand variants
+    primary: '#B388FF',
+    primaryDark: '#7C4DFF',
+    primaryLight: '#E8DEF8', // Very light pastel
+    accent: '#F2B8B5',
+    accentDark: '#E07A5F',
+    accentLight: '#FCECEC',
   },
 
-  // Core Neutrals - Dark Mode
+  // Core Neutrals & Context-Aware Brands - Dark Mode
   dark: {
-    background: '#121218',
-    surface: '#1E1E28',
-    surfaceSecondary: '#2C2B38',
-    text: '#E6E1E9',
-    textSecondary: '#AEAAAE',
-    border: '#363445',
+    background: '#000000', // Premium OLED Black
+    surface: '#15141A',    // Deep obsidian/purple for cards
+    surfaceSecondary: '#212029',
+    text: '#FFFFFF',
+    textSecondary: '#A09FA6',
+    border: '#2B2A36',
     shadow: '#000000',
-    card: '#1E1E28',
+    card: '#15141A',
     tint: '#B388FF',
+    // Dark mode brand variants (muted/adapted for dark backgrounds)
+    primary: '#B388FF',
+    primaryDark: '#D0B3FF', // Lighter for contrast on dark
+    primaryLight: '#2A1F40', // Deep purple instead of blinding white/pastel
+    accent: '#F2B8B5',
+    accentDark: '#F8D8D6', // Lighter for contrast
+    accentLight: '#3D2423', // Deep rose instead of blinding pastel
   },
 };
 

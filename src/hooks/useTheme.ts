@@ -19,7 +19,7 @@ export function useTheme() {
     isDark,
     mode,
     colors: themeColors,
-    brandColors: COLORS,
+    brandColors: { ...COLORS, ...themeColors } as any,
     typography: TYPOGRAPHY,
     shadow,
   };

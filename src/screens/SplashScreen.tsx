@@ -163,7 +163,7 @@ export const SplashScreen = ({ navigation }: any) => {
         ))}
         {/* Bottom Keypad Row */}
         <View style={styles.pinRow}>
-          <View style={[styles.pinKey, { backgroundColor: 'transparent' }]} />
+          <View style={styles.pinKeyPlaceholder} />
           <Pressable
             onPress={() => handleKeyPress('0')}
             style={[styles.pinKey, { backgroundColor: colors.surface }]}
@@ -172,9 +172,9 @@ export const SplashScreen = ({ navigation }: any) => {
           </Pressable>
           <Pressable
             onPress={handleDelete}
-            style={[styles.pinKey, { backgroundColor: 'transparent' }]}
+            style={[styles.pinKey, { backgroundColor: brandColors.primaryLight, shadowOpacity: 0, elevation: 0 }]}
           >
-            <Ionicons name="backspace" size={24} color={colors.text} />
+            <Ionicons name="backspace" size={24} color={brandColors.primaryDark} />
           </Pressable>
         </View>
       </View>
@@ -266,6 +266,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+  },
+  pinKeyPlaceholder: {
+    width: 72,
+    height: 72,
   },
   pinKeyText: {
     fontSize: 26,

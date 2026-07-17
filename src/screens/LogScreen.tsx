@@ -154,9 +154,9 @@ export const LogScreen = ({ route, navigation }: any) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.keyboardContainer}
+      style={[styles.keyboardContainer, { backgroundColor: colors.background }]}
     >
-      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
       {/* Absolute overlay for success checkmark */}
       <Animated.View style={[styles.celebrationOverlay, celebrationBgStyle]}>
         <Animated.View style={[styles.celebrationCircle, { backgroundColor: brandColors.teal }, checkMarkStyle]}>
@@ -165,7 +165,11 @@ export const LogScreen = ({ route, navigation }: any) => {
         <Text style={styles.celebrationText}>Log Synced!</Text>
       </Animated.View>
 
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={styles.container} 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header toolbar */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>Log Daily Health</Text>
@@ -445,7 +449,8 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingHorizontal: 20,
-    paddingBottom: 50,
+    paddingBottom: 80, // Extra padding to ensure we can scroll past gesture bars
+    flexGrow: 1,
   },
   header: {
     flexDirection: 'row',

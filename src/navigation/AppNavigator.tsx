@@ -1,10 +1,11 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Navigation types
 import { RootStackParamList, AuthStackParamList, AppTabParamList } from './NavigationTypes';
@@ -44,18 +45,18 @@ export const AuthNavigator = () => {
 };
 
 // --- Custom Centered Tab Button ---
-const CustomTabBarButton = ({ children, onPress }: any) => {
+const CustomTabBarButton = ({ children, onPress, style }: any) => {
   const { brandColors } = useTheme();
   return (
     <Pressable
-      onPress={() => {
+      onPress={(e) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        onPress();
+        if (onPress) onPress(e);
       }}
-      style={styles.customTabButtonContainer}
+      style={[style, { justifyContent: 'center', alignItems: 'center' }]}
     >
       <View style={[styles.customTabButton, { backgroundColor: brandColors.primaryDark }]}>
-        <Ionicons name="add" size={32} color="#FFF" />
+        <Ionicons name="add" size={36} color="#FFF" />
       </View>
     </Pressable>
   );
@@ -64,6 +65,7 @@ const CustomTabBarButton = ({ children, onPress }: any) => {
 // --- Bottom Tab Navigator ---
 export const TabNavigator = () => {
   const { colors, brandColors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -75,8 +77,8 @@ export const TabNavigator = () => {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 8,
+          height: 64 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 8,
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: -2 },
@@ -152,9 +154,25 @@ export const TabNavigator = () => {
 
 // --- App Root Navigation Container ---
 export const AppNavigator = () => {
+  const { colors } = useTheme();
+
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.background,
+    },
+  };
+
   return (
-    <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+    <NavigationContainer theme={navTheme}>
+      <RootStack.Navigator 
+        screenOptions={{ 
+          headerShown: false,
+          cardStyle: { backgroundColor: 'transparent' },
+          ...TransitionPresets.FadeFromBottomAndroid,
+        }}
+      >
         <RootStack.Screen name="Splash" component={SplashScreen} />
         <RootStack.Screen name="AuthNavigator" component={AuthNavigator} />
         <RootStack.Screen name="AppNavigator" component={TabNavigator} />
@@ -174,17 +192,11 @@ export const AppNavigator = () => {
 };
 
 const styles = StyleSheet.create({
-  customTabButtonContainer: {
-    top: -20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  customTabButton: {
+    top: -15,
     width: 60,
     height: 60,
-  },
-  customTabButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#7C4DFF',
