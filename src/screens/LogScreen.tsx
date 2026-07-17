@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useCycleStore } from '../store/useCycleStore';
@@ -12,6 +12,7 @@ import * as Haptics from 'expo-haptics';
 
 export const LogScreen = ({ route, navigation }: any) => {
   const { colors, brandColors } = useTheme();
+  const { height } = useWindowDimensions();
 
   // Selected logging date (default to today if missing)
   const logDate = route?.params?.date || formatLocalDate(new Date());
@@ -154,252 +155,150 @@ export const LogScreen = ({ route, navigation }: any) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={[styles.keyboardContainer, { backgroundColor: colors.background }]}
+      style={[styles.keyboardContainer, { backgroundColor: colors.background, height }]}
     >
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-      {/* Absolute overlay for success checkmark */}
-      <Animated.View style={[styles.celebrationOverlay, celebrationBgStyle]}>
-        <Animated.View style={[styles.celebrationCircle, { backgroundColor: brandColors.teal }, checkMarkStyle]}>
-          <Ionicons name="checkmark-sharp" size={60} color="#FFFFFF" />
+        {/* Absolute overlay for success checkmark */}
+        <Animated.View style={[styles.celebrationOverlay, celebrationBgStyle]}>
+          <Animated.View style={[styles.celebrationCircle, { backgroundColor: brandColors.teal }, checkMarkStyle]}>
+            <Ionicons name="checkmark-sharp" size={60} color="#FFFFFF" />
+          </Animated.View>
+          <Text style={styles.celebrationText}>Log Synced!</Text>
         </Animated.View>
-        <Text style={styles.celebrationText}>Log Synced!</Text>
-      </Animated.View>
 
-      <ScrollView 
-        style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={styles.container} 
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header toolbar */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Log Daily Health</Text>
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              if (navigation.canGoBack()) navigation.goBack();
-            }}
-            style={[styles.closeBtn, { backgroundColor: colors.surfaceSecondary }]}
-          >
-            <Ionicons name="close" size={20} color={colors.text} />
-          </Pressable>
-        </View>
+        <ScrollView
+          style={{ flex: 1, backgroundColor: colors.background }}
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header toolbar */}
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: colors.text }]}>Log Daily Health</Text>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                if (navigation.canGoBack()) navigation.goBack();
+              }}
+              style={[styles.closeBtn, { backgroundColor: colors.surfaceSecondary }]}
+            >
+              <Ionicons name="close" size={20} color={colors.text} />
+            </Pressable>
+          </View>
 
-        <Text style={[styles.dateSub, { color: colors.textSecondary }]}>
-          {new Date(logDate).toLocaleDateString(undefined, {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </Text>
-
-        {/* Section 1: Flow Intensity */}
-        <Card style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Flow Intensity</Text>
-          <View style={styles.flowRow}>
-            {[
-              { id: 'NONE', label: 'None', color: colors.border, icon: 'ellipse-outline' },
-              { id: 'SPOTTING', label: 'Spotting', color: brandColors.menstrual + '40', icon: 'water-outline' },
-              { id: 'LIGHT', label: 'Light', color: brandColors.menstrual + '70', icon: 'water' },
-              { id: 'MEDIUM', label: 'Medium', color: brandColors.menstrual, icon: 'water' },
-              { id: 'HEAVY', label: 'Heavy', color: brandColors.accentDark, icon: 'water' },
-            ].map(item => {
-              const isSelected = flow === item.id;
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setFlow(item.id as any);
-                  }}
-                  style={styles.flowCol}
-                >
-                  <View
-                    style={[
-                      styles.flowCircle,
-                      { backgroundColor: isSelected ? item.color : colors.surfaceSecondary },
-                      isSelected && styles.flowSelectedBorder,
-                    ]}
-                  >
-                    <Ionicons
-                      name={item.icon as any}
-                      size={item.id === 'HEAVY' ? 24 : item.id === 'NONE' ? 14 : 20}
-                      color={isSelected ? '#FFF' : colors.textSecondary}
-                    />
-                  </View>
-                  <Text style={[styles.flowLabel, { color: colors.text }]}>{item.label}</Text>
-                </Pressable>
-              );
+          <Text style={[styles.dateSub, { color: colors.textSecondary }]}>
+            {new Date(logDate).toLocaleDateString(undefined, {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
             })}
-          </View>
-        </Card>
+          </Text>
 
-        {/* Section 2: Symptoms Multi-select */}
-        <Card style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>How do you feel physically?</Text>
-          <View style={styles.chipsRow}>
-            {SYMPTOMS_LIST.map(item => {
-              const isSelected = symptoms.includes(item.id);
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => toggleSymptom(item.id)}
-                  style={[
-                    styles.chipBtn,
-                    { backgroundColor: isSelected ? brandColors.primaryLight : colors.surfaceSecondary },
-                    isSelected && { borderColor: brandColors.primary, borderWidth: 1 },
-                  ]}
-                >
-                  <Text style={[styles.chipText, { color: colors.text }]}>{item.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Card>
-
-        {/* Section 3: Moods Emojis */}
-        <Card style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>What is your emotional state?</Text>
-          <View style={styles.chipsRow}>
-            {MOODS_LIST.map(item => {
-              const isSelected = moods.includes(item.id);
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => toggleMood(item.id)}
-                  style={[
-                    styles.chipBtn,
-                    { backgroundColor: isSelected ? brandColors.follicular + '40' : colors.surfaceSecondary },
-                    isSelected && { borderColor: brandColors.follicular, borderWidth: 1 },
-                  ]}
-                >
-                  <Text style={[styles.chipText, { color: colors.text }]}>{item.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Card>
-
-        {/* Section 4: Cervical Mucus / Discharge */}
-        <Card style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Cervical Fluid Consistency</Text>
-          <View style={styles.chipsRow}>
-            {[
-              { id: 'NONE', label: 'Dry / None 🌵' },
-              { id: 'STICKY', label: 'Sticky 🪵' },
-              { id: 'CREAMY', label: 'Creamy 🍦' },
-              { id: 'WATERY', label: 'Watery 💧' },
-              { id: 'EGG_WHITE', label: 'Egg White (Fertile) 🥚' },
-            ].map(item => {
-              const isSelected = discharge === item.id;
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setDischarge(item.id as any);
-                  }}
-                  style={[
-                    styles.chipBtn,
-                    { backgroundColor: isSelected ? brandColors.teal + '30' : colors.surfaceSecondary },
-                    isSelected && { borderColor: brandColors.tealDark, borderWidth: 1 },
-                  ]}
-                >
-                  <Text style={[styles.chipText, { color: colors.text }]}>{item.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Card>
-
-        {/* Section 5: Sliders for Sleep & Libido */}
-        <Card style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Sleep & Sex Drive</Text>
-          
-          <View style={styles.sliderCol}>
-            <View style={styles.sliderLabelRow}>
-              <Text style={[styles.fieldLabel, { color: colors.text }]}>Sleep Quality</Text>
-              <Text style={[styles.sliderValueText, { color: colors.textSecondary }]}>
-                {Math.round(sleepQuality * 100)}%
-              </Text>
-            </View>
-            <View style={styles.customStepper}>
-              <Button
-                title="-"
-                onPress={() => setSleepQuality(prev => Math.max(0.1, parseFloat((prev - 0.1).toFixed(1))))}
-                variant="secondary"
-                style={styles.smallStepBtn}
-                textStyle={{ fontSize: 28, lineHeight: 32, marginTop: -4 }}
-              />
-              <Text style={[styles.smallStepVal, { color: colors.text }]}>{Math.round(sleepQuality * 10)}/10</Text>
-              <Button
-                title="+"
-                onPress={() => setSleepQuality(prev => Math.min(1.0, parseFloat((prev + 0.1).toFixed(1))))}
-                variant="secondary"
-                style={styles.smallStepBtn}
-                textStyle={{ fontSize: 24, lineHeight: 28, marginTop: -2 }}
-              />
-            </View>
-          </View>
-
-          <View style={styles.sliderCol}>
-            <View style={styles.sliderLabelRow}>
-              <Text style={[styles.fieldLabel, { color: colors.text }]}>Sex Drive (Libido)</Text>
-              <Text style={[styles.sliderValueText, { color: colors.textSecondary }]}>
-                {Math.round(sexDrive * 100)}%
-              </Text>
-            </View>
-            <View style={styles.customStepper}>
-              <Button
-                title="-"
-                onPress={() => setSexDrive(prev => Math.max(0.1, parseFloat((prev - 0.1).toFixed(1))))}
-                variant="secondary"
-                style={styles.smallStepBtn}
-                textStyle={{ fontSize: 28, lineHeight: 32, marginTop: -4 }}
-              />
-              <Text style={[styles.smallStepVal, { color: colors.text }]}>{Math.round(sexDrive * 10)}/10</Text>
-              <Button
-                title="+"
-                onPress={() => setSexDrive(prev => Math.min(1.0, parseFloat((prev + 0.1).toFixed(1))))}
-                variant="secondary"
-                style={styles.smallStepBtn}
-                textStyle={{ fontSize: 24, lineHeight: 28, marginTop: -2 }}
-              />
-            </View>
-          </View>
-        </Card>
-
-        {/* Section 6: Fertility specifics (BBT, Ovulation Test) */}
-        <Card style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Fertility Markers (Optional)</Text>
-          
-          <View style={styles.inputCol}>
-            <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Basal Body Temp (°C)</Text>
-            <TextInput
-              value={bbt}
-              onChangeText={setBbt}
-              placeholder="e.g. 36.5"
-              placeholderTextColor={colors.textSecondary + '70'}
-              keyboardType="decimal-pad"
-              style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surfaceSecondary }]}
-            />
-          </View>
-
-          <View style={styles.inputCol}>
-            <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Ovulation Test (LH Kit)</Text>
-            <View style={styles.chipsRow}>
+          {/* Section 1: Flow Intensity */}
+          <Card style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Flow Intensity</Text>
+            <View style={styles.flowRow}>
               {[
-                { id: 'NONE', label: 'Not Tested' },
-                { id: 'NEGATIVE', label: 'Negative (-)' },
-                { id: 'POSITIVE', label: 'Positive (+)' },
+                { id: 'NONE', label: 'None', color: colors.border, icon: 'ellipse-outline' },
+                { id: 'SPOTTING', label: 'Spotting', color: brandColors.menstrual + '40', icon: 'water-outline' },
+                { id: 'LIGHT', label: 'Light', color: brandColors.menstrual + '70', icon: 'water' },
+                { id: 'MEDIUM', label: 'Medium', color: brandColors.menstrual, icon: 'water' },
+                { id: 'HEAVY', label: 'Heavy', color: brandColors.accentDark, icon: 'water' },
               ].map(item => {
-                const isSelected = ovulationTest === item.id;
+                const isSelected = flow === item.id;
                 return (
                   <Pressable
                     key={item.id}
                     onPress={() => {
                       Haptics.selectionAsync();
-                      setOvulationTest(item.id as any);
+                      setFlow(item.id as any);
+                    }}
+                    style={styles.flowCol}
+                  >
+                    <View
+                      style={[
+                        styles.flowCircle,
+                        { backgroundColor: isSelected ? item.color : colors.surfaceSecondary },
+                        isSelected && styles.flowSelectedBorder,
+                      ]}
+                    >
+                      <Ionicons
+                        name={item.icon as any}
+                        size={item.id === 'HEAVY' ? 24 : item.id === 'NONE' ? 14 : 20}
+                        color={isSelected ? '#FFF' : colors.textSecondary}
+                      />
+                    </View>
+                    <Text style={[styles.flowLabel, { color: colors.text }]}>{item.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Card>
+
+          {/* Section 2: Symptoms Multi-select */}
+          <Card style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>How do you feel physically?</Text>
+            <View style={styles.chipsRow}>
+              {SYMPTOMS_LIST.map(item => {
+                const isSelected = symptoms.includes(item.id);
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => toggleSymptom(item.id)}
+                    style={[
+                      styles.chipBtn,
+                      { backgroundColor: isSelected ? brandColors.primaryLight : colors.surfaceSecondary },
+                      isSelected && { borderColor: brandColors.primary, borderWidth: 1 },
+                    ]}
+                  >
+                    <Text style={[styles.chipText, { color: colors.text }]}>{item.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Card>
+
+          {/* Section 3: Moods Emojis */}
+          <Card style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>What is your emotional state?</Text>
+            <View style={styles.chipsRow}>
+              {MOODS_LIST.map(item => {
+                const isSelected = moods.includes(item.id);
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => toggleMood(item.id)}
+                    style={[
+                      styles.chipBtn,
+                      { backgroundColor: isSelected ? brandColors.follicular + '40' : colors.surfaceSecondary },
+                      isSelected && { borderColor: brandColors.follicular, borderWidth: 1 },
+                    ]}
+                  >
+                    <Text style={[styles.chipText, { color: colors.text }]}>{item.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Card>
+
+          {/* Section 4: Cervical Mucus / Discharge */}
+          <Card style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Cervical Fluid Consistency</Text>
+            <View style={styles.chipsRow}>
+              {[
+                { id: 'NONE', label: 'Dry / None 🌵' },
+                { id: 'STICKY', label: 'Sticky 🪵' },
+                { id: 'CREAMY', label: 'Creamy 🍦' },
+                { id: 'WATERY', label: 'Watery 💧' },
+                { id: 'EGG_WHITE', label: 'Egg White (Fertile) 🥚' },
+              ].map(item => {
+                const isSelected = discharge === item.id;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setDischarge(item.id as any);
                     }}
                     style={[
                       styles.chipBtn,
@@ -412,32 +311,134 @@ export const LogScreen = ({ route, navigation }: any) => {
                 );
               })}
             </View>
+          </Card>
+
+          {/* Section 5: Sliders for Sleep & Libido */}
+          <Card style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Sleep & Sex Drive</Text>
+
+            <View style={styles.sliderCol}>
+              <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Sleep Quality</Text>
+              <View style={styles.chipsRow}>
+                {[
+                  { val: 0.2, label: 'Poor' },
+                  { val: 0.5, label: 'Fair' },
+                  { val: 0.8, label: 'Good' },
+                  { val: 1.0, label: 'Great' },
+                ].map(item => {
+                  const isSelected = Math.abs(sleepQuality - item.val) < 0.15;
+                  return (
+                    <Pressable
+                      key={item.label}
+                      onPress={() => setSleepQuality(item.val)}
+                      style={[
+                        styles.chipBtn,
+                        { backgroundColor: isSelected ? brandColors.primaryDark : colors.surfaceSecondary },
+                      ]}
+                    >
+                      <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.sliderCol}>
+              <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Sex Drive (Libido)</Text>
+              <View style={styles.chipsRow}>
+                {[
+                  { val: 0.0, label: 'None' },
+                  { val: 0.3, label: 'Low' },
+                  { val: 0.6, label: 'Medium' },
+                  { val: 1.0, label: 'High' },
+                ].map(item => {
+                  const isSelected = Math.abs(sexDrive - item.val) < 0.15;
+                  return (
+                    <Pressable
+                      key={item.label}
+                      onPress={() => setSexDrive(item.val)}
+                      style={[
+                        styles.chipBtn,
+                        { backgroundColor: isSelected ? brandColors.primaryDark : colors.surfaceSecondary },
+                      ]}
+                    >
+                      <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          </Card>
+
+          {/* Section 6: Fertility specifics (BBT, Ovulation Test) */}
+          <Card style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Fertility Markers (Optional)</Text>
+
+            <View style={styles.inputCol}>
+              <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Basal Body Temp (°C)</Text>
+              <TextInput
+                value={bbt}
+                onChangeText={setBbt}
+                placeholder="e.g. 36.5"
+                placeholderTextColor={colors.textSecondary + '70'}
+                keyboardType="decimal-pad"
+                style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surfaceSecondary }]}
+              />
+            </View>
+
+            <View style={styles.inputCol}>
+              <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Ovulation Test (LH Kit)</Text>
+              <View style={styles.chipsRow}>
+                {[
+                  { id: 'NONE', label: 'Not Tested' },
+                  { id: 'NEGATIVE', label: 'Negative (-)' },
+                  { id: 'POSITIVE', label: 'Positive (+)' },
+                ].map(item => {
+                  const isSelected = ovulationTest === item.id;
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => {
+                        Haptics.selectionAsync();
+                        setOvulationTest(item.id as any);
+                      }}
+                      style={[
+                        styles.chipBtn,
+                        { backgroundColor: isSelected ? brandColors.teal + '30' : colors.surfaceSecondary },
+                        isSelected && { borderColor: brandColors.tealDark, borderWidth: 1 },
+                      ]}
+                    >
+                      <Text style={[styles.chipText, { color: colors.text }]}>{item.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          </Card>
+
+          {/* Section 7: Notes */}
+          <Card style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Notes & Journal</Text>
+            <TextInput
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Write down details about energy, cramps, or general feelings..."
+              placeholderTextColor={colors.textSecondary + '70'}
+              multiline
+              numberOfLines={4}
+              style={[styles.textArea, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surfaceSecondary }]}
+            />
+          </Card>
+
+          {/* Bottom Actions */}
+          <View style={styles.footer}>
+            <Button title="Save Log Entry" onPress={handleSave} variant="primary" style={styles.saveBtn} />
+            {existingLog && (
+              <Button title="Clear Log for this Day" onPress={handleClear} variant="danger" style={styles.deleteBtn} />
+            )}
           </View>
-        </Card>
 
-        {/* Section 7: Notes */}
-        <Card style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Notes & Journal</Text>
-          <TextInput
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Write down details about energy, cramps, or general feelings..."
-            placeholderTextColor={colors.textSecondary + '70'}
-            multiline
-            numberOfLines={4}
-            style={[styles.textArea, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surfaceSecondary }]}
-          />
-        </Card>
-
-        {/* Bottom Actions */}
-        <View style={styles.footer}>
-          <Button title="Save Log Entry" onPress={handleSave} variant="primary" style={styles.saveBtn} />
-          {existingLog && (
-            <Button title="Clear Log for this Day" onPress={handleClear} variant="danger" style={styles.deleteBtn} />
-          )}
-        </View>
-
-      </ScrollView>
+        </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
