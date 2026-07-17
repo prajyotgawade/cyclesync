@@ -183,6 +183,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
                     onPress={() => setCycleLength(prev => Math.max(21, prev - 1))}
                     variant="secondary"
                     style={styles.stepBtn}
+                    textStyle={{ fontSize: 32, lineHeight: 36, marginTop: -4 }}
                   />
                   <Text style={[styles.stepperValText, { color: colors.text }]}>{cycleLength}</Text>
                   <Button
@@ -190,6 +191,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
                     onPress={() => setCycleLength(prev => Math.min(45, prev + 1))}
                     variant="secondary"
                     style={styles.stepBtn}
+                    textStyle={{ fontSize: 28, lineHeight: 32, marginTop: -2 }}
                   />
                 </View>
                 <Text style={[styles.helperLabel, { color: colors.textSecondary }]}>
@@ -209,6 +211,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
                     onPress={() => setPeriodLength(prev => Math.max(3, prev - 1))}
                     variant="secondary"
                     style={styles.stepBtn}
+                    textStyle={{ fontSize: 32, lineHeight: 36, marginTop: -4 }}
                   />
                   <Text style={[styles.stepperValText, { color: colors.text }]}>{periodLength}</Text>
                   <Button
@@ -216,6 +219,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
                     onPress={() => setPeriodLength(prev => Math.min(10, prev + 1))}
                     variant="secondary"
                     style={styles.stepBtn}
+                    textStyle={{ fontSize: 28, lineHeight: 32, marginTop: -2 }}
                   />
                 </View>
                 <Text style={[styles.helperLabel, { color: colors.textSecondary }]}>
@@ -558,6 +562,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     marginHorizontal: 20,
+    paddingHorizontal: 0,
   },
   stepperValText: {
     fontSize: 24,

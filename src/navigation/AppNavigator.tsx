@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,7 +30,13 @@ const Tab = createBottomTabNavigator<AppTabParamList>();
 // --- Auth Stack Navigator ---
 export const AuthNavigator = () => {
   return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: 'transparent' } }}>
+    <AuthStack.Navigator 
+      screenOptions={{ 
+        headerShown: false, 
+        cardStyle: { backgroundColor: 'transparent' },
+        ...TransitionPresets.SlideFromRightIOS,
+      }}
+    >
       <AuthStack.Screen name="Welcome" component={AuthScreen} />
       <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
     </AuthStack.Navigator>
@@ -156,8 +162,10 @@ export const AppNavigator = () => {
           name="LogModal"
           component={LogScreen}
           options={{
-            presentation: 'modal',
-            cardStyle: { backgroundColor: 'transparent' },
+            presentation: 'transparentModal',
+            ...TransitionPresets.ModalPresentationIOS,
+            cardOverlayEnabled: true,
+            gestureEnabled: true,
           }}
         />
       </RootStack.Navigator>

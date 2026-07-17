@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, useWindowDimensions, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../hooks/useTheme';
 import { Button } from '../components/Button';
@@ -33,8 +34,9 @@ export const AuthScreen = ({ navigation }: any) => {
   return (
     <LinearGradient
       colors={[brandColors.primaryLight, colors.background]}
-      style={styles.container}
+      style={styles.gradientBg}
     >
+      <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
       {/* Upper Logo / Title Area */}
@@ -112,11 +114,15 @@ export const AuthScreen = ({ navigation }: any) => {
           By signing in, you agree to our secure local-encryption terms. We do not use third-party tracking.
         </Text>
       </Animated.View>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradientBg: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 24,

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, withSpring } from 'react-native-reanimated';
 import { useTheme } from '../hooks/useTheme';
 import { useCycleStore } from '../store/useCycleStore';
@@ -101,7 +102,7 @@ export const SplashScreen = ({ navigation }: any) => {
   // Render standard Loading Splash
   if (!isInitialized || (isAuthenticated && pinCode && !isAppLocked)) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
           <View style={[styles.logoCircle, { backgroundColor: brandColors.primary }]}>
             <Ionicons name="water" size={60} color="#FFFFFF" />
@@ -109,13 +110,13 @@ export const SplashScreen = ({ navigation }: any) => {
         </Animated.View>
         <Text style={[styles.logoText, { color: colors.text }]}>CycleSync</Text>
         <ActivityIndicator size="small" color={brandColors.primaryDark} style={styles.loader} />
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Render Secure PIN Lock Screen
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'space-around' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'space-around' }]}>
       <View style={styles.lockHeader}>
         <Ionicons name="lock-closed" size={36} color={brandColors.primaryDark} />
         <Text style={[styles.lockTitle, { color: colors.text }]}>Enter PIN Code</Text>
@@ -177,7 +178,7 @@ export const SplashScreen = ({ navigation }: any) => {
           </Pressable>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

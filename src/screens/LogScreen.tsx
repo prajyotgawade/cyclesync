@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useCycleStore } from '../store/useCycleStore';
 import { Button } from '../components/Button';
@@ -155,6 +156,7 @@ export const LogScreen = ({ route, navigation }: any) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.keyboardContainer}
     >
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       {/* Absolute overlay for success checkmark */}
       <Animated.View style={[styles.celebrationOverlay, celebrationBgStyle]}>
         <Animated.View style={[styles.celebrationCircle, { backgroundColor: brandColors.teal }, checkMarkStyle]}>
@@ -323,6 +325,7 @@ export const LogScreen = ({ route, navigation }: any) => {
                 onPress={() => setSleepQuality(prev => Math.max(0.1, parseFloat((prev - 0.1).toFixed(1))))}
                 variant="secondary"
                 style={styles.smallStepBtn}
+                textStyle={{ fontSize: 28, lineHeight: 32, marginTop: -4 }}
               />
               <Text style={[styles.smallStepVal, { color: colors.text }]}>{Math.round(sleepQuality * 10)}/10</Text>
               <Button
@@ -330,6 +333,7 @@ export const LogScreen = ({ route, navigation }: any) => {
                 onPress={() => setSleepQuality(prev => Math.min(1.0, parseFloat((prev + 0.1).toFixed(1))))}
                 variant="secondary"
                 style={styles.smallStepBtn}
+                textStyle={{ fontSize: 24, lineHeight: 28, marginTop: -2 }}
               />
             </View>
           </View>
@@ -347,6 +351,7 @@ export const LogScreen = ({ route, navigation }: any) => {
                 onPress={() => setSexDrive(prev => Math.max(0.1, parseFloat((prev - 0.1).toFixed(1))))}
                 variant="secondary"
                 style={styles.smallStepBtn}
+                textStyle={{ fontSize: 28, lineHeight: 32, marginTop: -4 }}
               />
               <Text style={[styles.smallStepVal, { color: colors.text }]}>{Math.round(sexDrive * 10)}/10</Text>
               <Button
@@ -354,6 +359,7 @@ export const LogScreen = ({ route, navigation }: any) => {
                 onPress={() => setSexDrive(prev => Math.min(1.0, parseFloat((prev + 0.1).toFixed(1))))}
                 variant="secondary"
                 style={styles.smallStepBtn}
+                textStyle={{ fontSize: 24, lineHeight: 28, marginTop: -2 }}
               />
             </View>
           </View>
@@ -428,6 +434,7 @@ export const LogScreen = ({ route, navigation }: any) => {
         </View>
 
       </ScrollView>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 };
@@ -444,7 +451,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: 10,
     height: 44,
   },
   title: {
