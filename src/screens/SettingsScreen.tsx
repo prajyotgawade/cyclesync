@@ -356,30 +356,6 @@ export const SettingsScreen = ({ navigation }: any) => {
           />
         </Card>
 
-        {/* 6. Diagnostics & Sandbox */}
-        <Card style={styles.settingsCard}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Diagnostics & Dev Actions</Text>
-          
-          <Button
-            title="Seed 6-Month Mock History"
-            onPress={() => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              seedDemo();
-            }}
-            variant="secondary"
-            icon={<Ionicons name="refresh-circle-outline" size={18} color={brandColors.primaryDark} />}
-          />
-
-          <Button
-            title="Clear Cache & Local Tables"
-            onPress={() => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-              clearAllData();
-            }}
-            variant="danger"
-            icon={<Ionicons name="trash-outline" size={18} color="#FFFFFF" />}
-          />
-        </Card>
 
         {/* 7. Footer Options */}
         <View style={styles.settingsFooter}>
