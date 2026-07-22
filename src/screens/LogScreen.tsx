@@ -45,7 +45,7 @@ export const LogScreen = ({ route, navigation }: any) => {
       setSexDrive(existingLog.sex_drive);
       setBbt(existingLog.bbt ? String(existingLog.bbt) : '');
       setOvulationTest(existingLog.ovulation_test);
-      setPillTaken(existingLog.pill_taken || 0);
+      setPillTaken((existingLog.pill_taken as 0 | 1) || 0);
       setNotes(existingLog.notes || '');
     } else {
       setFlow('NONE');

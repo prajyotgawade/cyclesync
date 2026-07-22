@@ -640,6 +640,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
   },
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
   pinInputRow: {
     flexDirection: 'row',
     justifyContent: 'center',
