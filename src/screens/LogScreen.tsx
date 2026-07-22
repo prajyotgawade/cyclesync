@@ -1,57 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useCycleStore } from '../store/useCycleStore';
 import { formatLocalDate } from '../utils/predictions';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming, FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { BlurView } from 'expo-blur';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-// Reusable Accordion Component
-const AccordionSection = ({ title, icon, summary, isExpanded, onToggle, children, colors, brandColors }: any) => {
-  return (
-    <Animated.View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]} layout={LinearTransition.duration(200)}>
-      <Pressable 
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          onToggle();
-        }} 
-        style={styles.accordionHeader}
-      >
-        <View style={styles.accordionHeaderLeft}>
-          <View style={[styles.accordionIconBg, { backgroundColor: brandColors.primary + '20' }]}>
-            <Ionicons name={icon} size={18} color={brandColors.primary} />
-          </View>
-          <View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
-            {summary && !isExpanded ? (
-              <Text style={[styles.sectionSummary, { color: brandColors.primary }]}>{summary}</Text>
-            ) : null}
-          </View>
-        </View>
-        <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={20} color={colors.textSecondary} />
-      </Pressable>
-
-      {isExpanded && (
-        <Animated.View 
-          entering={FadeIn.duration(200)} 
-          exiting={FadeOut.duration(200)}
-          style={styles.accordionContent}
-        >
-          {children}
-        </Animated.View>
-      )}
-    </Animated.View>
-  );
-};
+import { LinearGradient } from 'expo-linear-gradient';
 
 export const LogScreen = ({ route, navigation }: any) => {
   const { colors, brandColors } = useTheme();
-  const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   const logDate = route?.params?.date || formatLocalDate(new Date());
 
@@ -61,22 +21,6 @@ export const LogScreen = ({ route, navigation }: any) => {
 
   const existingLog = dailyLogs.find(l => l.date === logDate);
 
-  // States for Accordions
-  const [expandedSections, setExpandedSections] = useState({
-    flow: true,
-    symptoms: false,
-    moods: false,
-    discharge: false,
-    sleepLibido: false,
-    fertility: false,
-    notes: false,
-  });
-
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  // Log Data States
   const [flow, setFlow] = useState<'NONE' | 'SPOTTING' | 'LIGHT' | 'MEDIUM' | 'HEAVY'>('NONE');
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
@@ -103,18 +47,6 @@ export const LogScreen = ({ route, navigation }: any) => {
       setOvulationTest(existingLog.ovulation_test);
       setPillTaken(existingLog.pill_taken || 0);
       setNotes(existingLog.notes || '');
-
-      // Smart expand: If they have data in a section, expand it by default to review it easily
-      setExpandedSections({
-        flow: true,
-        symptoms: !!existingLog.symptoms,
-        moods: !!existingLog.moods,
-        discharge: existingLog.discharge !== 'NONE',
-        sleepLibido: true,
-        fertility: !!existingLog.bbt || existingLog.ovulation_test !== 'NONE' || existingLog.pill_taken === 1,
-        notes: !!existingLog.notes,
-      });
-
     } else {
       setFlow('NONE');
       setSymptoms([]);
@@ -175,13 +107,7 @@ export const LogScreen = ({ route, navigation }: any) => {
     });
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    showCelebration.value = withTiming(1, { duration: 250 }, () => {
-      checkScale.value = withSpring(1, { damping: 10, stiffness: 200 }, () => {
-        withDelay(800, withTiming(0, { duration: 200 }, () => {
-          if (navigation.canGoBack()) navigation.goBack();
-        }));
-      });
-    });
+    if (navigation.canGoBack()) navigation.goBack();
   };
 
   const handleClear = () => {
@@ -190,534 +116,439 @@ export const LogScreen = ({ route, navigation }: any) => {
     if (navigation.canGoBack()) navigation.goBack();
   };
 
-  const celebrationBgStyle = useAnimatedStyle(() => ({
-    opacity: showCelebration.value,
-    zIndex: showCelebration.value > 0 ? 100 : -1,
-    pointerEvents: showCelebration.value > 0 ? 'auto' : 'none',
-  }));
-
-  const checkMarkStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: checkScale.value }],
-  }));
+  const KeyboardWrapper = Platform.OS === 'ios' ? KeyboardAvoidingView : View as any;
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[styles.keyboardContainer, { backgroundColor: colors.background, height }]}>
-      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-        
-        {/* Full Screen Celebration Overlay */}
-        <Animated.View style={[styles.celebrationOverlay, celebrationBgStyle]}>
-          <Animated.View style={[styles.celebrationCircle, { backgroundColor: brandColors.teal }, checkMarkStyle]}>
-            <Ionicons name="checkmark-sharp" size={60} color="#FFFFFF" />
-          </Animated.View>
-          <Text style={styles.celebrationText}>Log Saved!</Text>
-        </Animated.View>
+    <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+      
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={[styles.title, { color: colors.text }]}>Log Daily Health</Text>
+            <Text style={[styles.dateSub, { color: colors.textSecondary }]}>
+              {new Date(logDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              if (navigation.canGoBack()) navigation.goBack();
+            }}
+            style={[styles.closeBtn, { backgroundColor: colors.surfaceSecondary }]}
+          >
+            <Ionicons name="close" size={20} color={colors.text} />
+          </Pressable>
+        </View>
 
-        <ScrollView
-          style={{ flex: 1, backgroundColor: colors.background }}
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <View>
-              <Text style={[styles.title, { color: colors.text }]}>Log Daily Health</Text>
-              <Text style={[styles.dateSub, { color: brandColors.primary }]}>
-                {new Date(logDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-              </Text>
-            </View>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                if (navigation.canGoBack()) navigation.goBack();
-              }}
-              style={[styles.closeBtn, { backgroundColor: colors.surfaceSecondary }]}
-            >
-              <Ionicons name="close" size={24} color={colors.text} />
-            </Pressable>
+        {/* Section 1: Flow Intensity */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Flow Intensity</Text>
+          <View style={styles.flowRow}>
+            {[
+              { id: 'NONE', label: 'None', icon: 'ellipse-outline' },
+              { id: 'SPOTTING', label: 'Spotting', icon: 'water' },
+              { id: 'LIGHT', label: 'Light', icon: 'water' },
+              { id: 'MEDIUM', label: 'Medium', icon: 'water' },
+              { id: 'HEAVY', label: 'Heavy', icon: 'water' },
+            ].map(item => {
+              const isSelected = flow === item.id;
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setFlow(item.id as any);
+                  }}
+                  style={styles.flowCol}
+                >
+                  <View style={[
+                    styles.flowCircle,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { borderWidth: 2, borderColor: brandColors.primary, transform: [{ scale: 1.05 }], backgroundColor: colors.surface }
+                  ]}>
+                    <Ionicons 
+                      name={item.icon as any} 
+                      size={20} 
+                      color={isSelected ? brandColors.primary : colors.textSecondary} 
+                    />
+                  </View>
+                  <Text style={[styles.flowLabel, { color: isSelected ? colors.text : colors.textSecondary }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Section 2: Symptoms */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>How do you feel physically?</Text>
+          <View style={styles.chipsGrid}>
+            {SYMPTOMS_LIST.map(item => {
+              const isSelected = symptoms.includes(item.id);
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => toggleSymptom(item.id)}
+                  style={[
+                    styles.chipBtn,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { backgroundColor: brandColors.primaryLight + (colors.background === '#000000' ? '30' : ''), borderColor: brandColors.primary }
+                  ]}
+                >
+                  <Text style={[styles.chipText, { color: isSelected ? brandColors.primaryDark : colors.text }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Section 3: Moods */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>What is your emotional state?</Text>
+          <View style={styles.chipsGrid}>
+            {MOODS_LIST.map(item => {
+              const isSelected = moods.includes(item.id);
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => toggleMood(item.id)}
+                  style={[
+                    styles.chipBtn,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { backgroundColor: brandColors.primaryLight + (colors.background === '#000000' ? '30' : ''), borderColor: brandColors.primary }
+                  ]}
+                >
+                  <Text style={[styles.chipText, { color: isSelected ? brandColors.primaryDark : colors.text }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Section 4: Discharge */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Cervical Fluid Consistency</Text>
+          <View style={styles.chipsGrid}>
+            {[
+              { id: 'DRY', label: 'Dry / None 🌵' },
+              { id: 'STICKY', label: 'Sticky 🪵' },
+              { id: 'CREAMY', label: 'Creamy 🍦' },
+              { id: 'WATERY', label: 'Watery 💧' },
+              { id: 'EGG_WHITE', label: 'Egg White (Fertile) 🥚' },
+            ].map(item => {
+              const isSelected = (item.id === 'DRY' && (discharge === 'DRY' || discharge === 'NONE')) || discharge === item.id;
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setDischarge(item.id as any);
+                  }}
+                  style={[
+                    styles.chipBtn,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { backgroundColor: brandColors.teal + (colors.background === '#000000' ? '30' : '20'), borderColor: brandColors.teal }
+                  ]}
+                >
+                  <Text style={[styles.chipText, { color: isSelected ? brandColors.teal : colors.text }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Section 5: Sleep & Libido */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Sleep & Sex Drive</Text>
+
+          <Text style={[styles.fieldLabel, { color: colors.text }]}>Sleep Quality</Text>
+          <View style={[styles.chipsGrid, { marginTop: 8, marginBottom: 16 }]}>
+            {[
+              { val: 0.2, label: 'Poor 🥱' },
+              { val: 0.5, label: 'Fair 😐' },
+              { val: 0.8, label: 'Good 😌' },
+              { val: 1.0, label: 'Great 🤩' },
+            ].map(item => {
+              const isSelected = Math.abs(sleepQuality - item.val) < 0.15;
+              return (
+                <Pressable
+                  key={item.label}
+                  onPress={() => setSleepQuality(item.val)}
+                  style={[
+                    styles.chipBtn,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { backgroundColor: brandColors.primaryLight + (colors.background === '#000000' ? '30' : ''), borderColor: brandColors.primary }
+                  ]}
+                >
+                  <Text style={[styles.chipText, { color: isSelected ? brandColors.primaryDark : colors.text }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
           </View>
 
-          {/* Section 1: Flow */}
-          <AccordionSection
-            title="Flow Intensity"
-            icon="water-outline"
-            summary={flow !== 'NONE' ? `${flow.charAt(0) + flow.slice(1).toLowerCase()}` : 'None'}
-            isExpanded={expandedSections.flow}
-            onToggle={() => toggleSection('flow')}
-            colors={colors}
-            brandColors={brandColors}
-          >
-            <View style={styles.flowRow}>
-              {[
-                { id: 'NONE', label: 'None', color: colors.border, icon: 'close-outline' },
-                { id: 'SPOTTING', label: 'Spot', color: brandColors.menstrual + '40', icon: 'water-outline' },
-                { id: 'LIGHT', label: 'Light', color: brandColors.menstrual + '70', icon: 'water' },
-                { id: 'MEDIUM', label: 'Med', color: brandColors.menstrual, icon: 'water' },
-                { id: 'HEAVY', label: 'Heavy', color: brandColors.accentDark, icon: 'water' },
-              ].map(item => {
-                const isSelected = flow === item.id;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => {
-                      Haptics.selectionAsync();
-                      setFlow(item.id as any);
-                    }}
-                    style={styles.flowCol}
-                  >
-                    <View style={[
-                      styles.flowCircle,
-                      { backgroundColor: isSelected ? item.color : colors.surfaceSecondary },
-                      isSelected && { borderWidth: 2, borderColor: colors.background, transform: [{ scale: 1.05 }] },
-                    ]}>
-                      <Ionicons name={item.icon as any} size={22} color={isSelected ? '#FFF' : colors.textSecondary} />
-                    </View>
-                    <Text style={[styles.flowLabel, { color: isSelected ? colors.text : colors.textSecondary }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </AccordionSection>
-
-          {/* Section 2: Symptoms */}
-          <AccordionSection
-            title="Physical Symptoms"
-            icon="body-outline"
-            summary={symptoms.length > 0 ? `${symptoms.length} Selected` : ''}
-            isExpanded={expandedSections.symptoms}
-            onToggle={() => toggleSection('symptoms')}
-            colors={colors}
-            brandColors={brandColors}
-          >
-            <View style={styles.chipsGrid}>
-              {SYMPTOMS_LIST.map(item => {
-                const isSelected = symptoms.includes(item.id);
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => toggleSymptom(item.id)}
-                    style={[
-                      styles.chipBtn,
-                      { backgroundColor: isSelected ? brandColors.primary : colors.surfaceSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </AccordionSection>
-
-          {/* Section 3: Moods */}
-          <AccordionSection
-            title="Emotional State"
-            icon="happy-outline"
-            summary={moods.length > 0 ? `${moods.length} Selected` : ''}
-            isExpanded={expandedSections.moods}
-            onToggle={() => toggleSection('moods')}
-            colors={colors}
-            brandColors={brandColors}
-          >
-            <View style={styles.chipsGrid}>
-              {MOODS_LIST.map(item => {
-                const isSelected = moods.includes(item.id);
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => toggleMood(item.id)}
-                    style={[
-                      styles.chipBtn,
-                      { backgroundColor: isSelected ? brandColors.follicular : colors.surfaceSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </AccordionSection>
-
-          {/* Section 4: Discharge */}
-          <AccordionSection
-            title="Cervical Fluid"
-            icon="leaf-outline"
-            summary={discharge !== 'NONE' ? `${discharge.charAt(0) + discharge.slice(1).toLowerCase().replace('_', ' ')}` : ''}
-            isExpanded={expandedSections.discharge}
-            onToggle={() => toggleSection('discharge')}
-            colors={colors}
-            brandColors={brandColors}
-          >
-            <View style={styles.chipsGrid}>
-              {[
-                { id: 'NONE', label: 'None 🚫' },
-                { id: 'DRY', label: 'Dry 🌵' },
-                { id: 'STICKY', label: 'Sticky 🪵' },
-                { id: 'CREAMY', label: 'Creamy 🍦' },
-                { id: 'WATERY', label: 'Watery 💧' },
-                { id: 'EGG_WHITE', label: 'Egg White 🥚' },
-              ].map(item => {
-                const isSelected = discharge === item.id;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => {
-                      Haptics.selectionAsync();
-                      setDischarge(item.id as any);
-                    }}
-                    style={[
-                      styles.chipBtn,
-                      { backgroundColor: isSelected ? brandColors.teal : colors.surfaceSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </AccordionSection>
-
-          {/* Section 5: Sleep & Libido */}
-          <AccordionSection
-            title="Sleep & Sex Drive"
-            icon="bed-outline"
-            summary=""
-            isExpanded={expandedSections.sleepLibido}
-            onToggle={() => toggleSection('sleepLibido')}
-            colors={colors}
-            brandColors={brandColors}
-          >
-            <Text style={[styles.fieldLabel, { color: colors.text }]}>Sleep Quality</Text>
-            <View style={[styles.chipsGrid, { marginTop: 8, marginBottom: 20 }]}>
-              {[
-                { val: 0.2, label: 'Poor 🥱' },
-                { val: 0.5, label: 'Fair 😐' },
-                { val: 0.8, label: 'Good 😌' },
-                { val: 1.0, label: 'Great 🤩' },
-              ].map(item => {
-                const isSelected = Math.abs(sleepQuality - item.val) < 0.15;
-                return (
-                  <Pressable
-                    key={item.label}
-                    onPress={() => setSleepQuality(item.val)}
-                    style={[
-                      styles.chipBtn,
-                      { backgroundColor: isSelected ? brandColors.luteal : colors.surfaceSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <Text style={[styles.fieldLabel, { color: colors.text }]}>Sex Drive (Libido)</Text>
-            <View style={[styles.chipsGrid, { marginTop: 8 }]}>
-              {[
-                { val: 0.0, label: 'None 🧊' },
-                { val: 0.3, label: 'Low 📉' },
-                { val: 0.6, label: 'Medium 🔥' },
-                { val: 1.0, label: 'High 🌋' },
-              ].map(item => {
-                const isSelected = Math.abs(sexDrive - item.val) < 0.15;
-                return (
-                  <Pressable
-                    key={item.label}
-                    onPress={() => setSexDrive(item.val)}
-                    style={[
-                      styles.chipBtn,
-                      { backgroundColor: isSelected ? brandColors.accent : colors.surfaceSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </AccordionSection>
-
-          {/* Section 6: Fertility & Meds */}
-          <AccordionSection
-            title="Fertility & Medication"
-            icon="medical-outline"
-            summary=""
-            isExpanded={expandedSections.fertility}
-            onToggle={() => toggleSection('fertility')}
-            colors={colors}
-            brandColors={brandColors}
-          >
-            <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Basal Body Temp (°C)</Text>
-            <TextInput
-              value={bbt}
-              onChangeText={setBbt}
-              placeholder="e.g. 36.5"
-              placeholderTextColor={colors.textSecondary + '70'}
-              keyboardType="decimal-pad"
-              style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surfaceSecondary }]}
-            />
-
-            <Text style={[styles.fieldLabel, { color: colors.text, marginTop: 16, marginBottom: 8 }]}>Ovulation Test (LH Kit)</Text>
-            <View style={styles.chipsGrid}>
-              {[
-                { id: 'NONE', label: 'Not Tested 🤷‍♀️' },
-                { id: 'NEGATIVE', label: 'Negative (-)' },
-                { id: 'POSITIVE', label: 'Positive (+)' },
-              ].map(item => {
-                const isSelected = ovulationTest === item.id;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => setOvulationTest(item.id as any)}
-                    style={[
-                      styles.chipBtn,
-                      { backgroundColor: isSelected ? brandColors.primaryDark : colors.surfaceSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <Text style={[styles.fieldLabel, { color: colors.text, marginTop: 16, marginBottom: 8 }]}>Daily Medication / Pill</Text>
-            <View style={styles.chipsGrid}>
-              {[
-                { id: 0, label: 'Not Taken ❌' },
-                { id: 1, label: 'Taken ✅' },
-              ].map(item => {
-                const isSelected = pillTaken === item.id;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => setPillTaken(item.id as 0 | 1)}
-                    style={[
-                      styles.chipBtn,
-                      { backgroundColor: isSelected ? brandColors.accentDark : colors.surfaceSecondary },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </AccordionSection>
-
-          {/* Section 7: Notes */}
-          <AccordionSection
-            title="Notes & Journal"
-            icon="journal-outline"
-            summary=""
-            isExpanded={expandedSections.notes}
-            onToggle={() => toggleSection('notes')}
-            colors={colors}
-            brandColors={brandColors}
-          >
-            <TextInput
-              value={notes}
-              onChangeText={setNotes}
-              placeholder="Write down any additional details..."
-              placeholderTextColor={colors.textSecondary + '70'}
-              multiline
-              numberOfLines={4}
-              style={[styles.textArea, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surfaceSecondary }]}
-            />
-          </AccordionSection>
-          
-          <View style={{ height: 120 }} /> 
-        </ScrollView>
-        
-        {/* Floating Action Bar (Always accessible without scrolling down) */}
-        <BlurView intensity={80} tint={colors.background === '#121218' ? 'dark' : 'light'} style={[styles.floatingBottomBar, { borderTopColor: colors.border }]}>
-          <View style={{ flex: 1, flexDirection: 'row' }}>
-            {existingLog && (
-              <Pressable onPress={handleClear} style={[styles.floatingIconBtn, { backgroundColor: colors.surfaceSecondary, marginRight: 12 }]}>
-                <Ionicons name="trash-outline" size={20} color={brandColors.menstrual} />
-              </Pressable>
-            )}
-            <Pressable onPress={handleSave} style={[styles.floatingSaveBtn, { backgroundColor: brandColors.primary }]}>
-              <Text style={styles.floatingSaveText}>Save Log Entry</Text>
-              <Ionicons name="checkmark-circle" size={20} color="#FFF" style={{ marginLeft: 8 }} />
-            </Pressable>
+          <Text style={[styles.fieldLabel, { color: colors.text }]}>Sex Drive (Libido)</Text>
+          <View style={[styles.chipsGrid, { marginTop: 8 }]}>
+            {[
+              { val: 0.0, label: 'None 🧊' },
+              { val: 0.3, label: 'Low 📉' },
+              { val: 0.6, label: 'Medium 🔥' },
+              { val: 1.0, label: 'High 🌋' },
+            ].map(item => {
+              const isSelected = Math.abs(sexDrive - item.val) < 0.15;
+              return (
+                <Pressable
+                  key={item.label}
+                  onPress={() => setSexDrive(item.val)}
+                  style={[
+                    styles.chipBtn,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { backgroundColor: brandColors.primaryLight + (colors.background === '#000000' ? '30' : ''), borderColor: brandColors.primary }
+                  ]}
+                >
+                  <Text style={[styles.chipText, { color: isSelected ? brandColors.primaryDark : colors.text }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
           </View>
-        </BlurView>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+        </View>
+
+        {/* Section 6: Fertility & Meds */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Fertility & Medication</Text>
+
+          <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Basal Body Temp (°C)</Text>
+          <TextInput
+            value={bbt}
+            onChangeText={setBbt}
+            placeholder="e.g. 36.5"
+            placeholderTextColor={colors.textSecondary}
+            keyboardType="decimal-pad"
+            style={[styles.textInput, { backgroundColor: colors.surfaceSecondary, borderColor: colors.border, color: colors.text }]}
+          />
+
+          <Text style={[styles.fieldLabel, { color: colors.text, marginTop: 16, marginBottom: 8 }]}>Ovulation Test (LH Kit)</Text>
+          <View style={styles.chipsGrid}>
+            {[
+              { id: 'NONE', label: 'Not Tested 🤷‍♀️' },
+              { id: 'NEGATIVE', label: 'Negative (-)' },
+              { id: 'POSITIVE', label: 'Positive (+)' },
+            ].map(item => {
+              const isSelected = ovulationTest === item.id;
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => setOvulationTest(item.id as any)}
+                  style={[
+                    styles.chipBtn,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { backgroundColor: brandColors.teal + (colors.background === '#000000' ? '30' : '20'), borderColor: brandColors.teal }
+                  ]}
+                >
+                  <Text style={[styles.chipText, { color: isSelected ? brandColors.teal : colors.text }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text style={[styles.fieldLabel, { color: colors.text, marginTop: 16, marginBottom: 8 }]}>Daily Medication / Pill</Text>
+          <View style={styles.chipsGrid}>
+            {[
+              { id: 0, label: 'Not Taken ❌' },
+              { id: 1, label: 'Taken ✅' },
+            ].map(item => {
+              const isSelected = pillTaken === item.id;
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => setPillTaken(item.id as 0 | 1)}
+                  style={[
+                    styles.chipBtn,
+                    { backgroundColor: colors.surfaceSecondary },
+                    isSelected && { backgroundColor: brandColors.teal + (colors.background === '#000000' ? '30' : '20'), borderColor: brandColors.teal }
+                  ]}
+                >
+                  <Text style={[styles.chipText, { color: isSelected ? brandColors.teal : colors.text }]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Section 7: Notes */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Notes & Journal</Text>
+          <TextInput
+            value={notes}
+            onChangeText={setNotes}
+            placeholder="Write down any additional details..."
+            placeholderTextColor={colors.textSecondary}
+            multiline
+            numberOfLines={4}
+            style={[styles.textArea, { backgroundColor: colors.surfaceSecondary, borderColor: colors.border, color: colors.text }]}
+          />
+        </View>
+      </ScrollView>
+      
+      {/* Solid Bottom Bar (Not Floating) */}
+      <View style={[styles.staticBottomBar, { backgroundColor: colors.surface, borderTopColor: colors.border, paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View style={styles.bottomBarContent}>
+          {existingLog && (
+            <Pressable onPress={handleClear} style={[styles.deleteBtn, { backgroundColor: colors.surface, borderColor: brandColors.menstrual }]}>
+              <Ionicons name="trash-outline" size={20} color={brandColors.menstrual} />
+            </Pressable>
+          )}
+          <Pressable onPress={handleSave} style={[styles.saveBtn, { overflow: 'hidden' }]}>
+            <LinearGradient
+              colors={['#B388FF', '#7C4DFF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <Text style={styles.saveText}>Save Log Entry</Text>
+            <Ionicons name="checkmark-circle" size={18} color="#FFF" style={{ marginLeft: 6 }} />
+          </Pressable>
+        </View>
+      </View>
+
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  keyboardContainer: {
+  scrollView: {
     flex: 1,
   },
-  container: {
-    paddingHorizontal: 16,
+  scrollContent: {
+    paddingHorizontal: 12,
     paddingTop: 12,
+    paddingBottom: 24,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 16,
+    paddingHorizontal: 4,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '600',
   },
   dateSub: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginTop: 2,
+    fontSize: 13,
+    marginTop: 4,
   },
   closeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sectionCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  accordionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  accordionHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  accordionIconBg: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+  },
+  sectionCard: {
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 1,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-  },
-  sectionSummary: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  accordionContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-    paddingTop: 4,
+    fontWeight: '500',
+    marginBottom: 12,
   },
   flowRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     width: '100%',
   },
   flowCol: {
     alignItems: 'center',
   },
   flowCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  flowLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  chipsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chipBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  textInput: {
+    height: 44,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 14,
+  },
+  textArea: {
+    height: 80,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    textAlignVertical: 'top',
+  },
+  staticBottomBar: {
+    borderTopWidth: 1,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+  },
+  bottomBarContent: {
+    flexDirection: 'row',
+  },
+  saveBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  deleteBtn: {
     width: 50,
     height: 50,
     borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
-  },
-  flowLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  chipsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  chipBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  chipText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  textInput: {
-    height: 52,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-  },
-  textArea: {
-    height: 120,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    textAlignVertical: 'top',
-  },
-  floatingBottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
-    borderTopWidth: 1,
-  },
-  floatingSaveBtn: {
-    flex: 1,
-    height: 56,
-    borderRadius: 28,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  floatingSaveText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  floatingIconBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  celebrationOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  celebrationCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  celebrationText: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: '800',
-    marginTop: 20,
+    marginRight: 12,
   },
 });
