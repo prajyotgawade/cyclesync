@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeInRight, FadeOutLeft } from 'react-native-reanimated';
+import Animated, { SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { useTheme } from '../hooks/useTheme';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -102,7 +102,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
     switch (step) {
       case 1:
         return (
-          <Animated.View key="step1" entering={FadeInRight} exiting={FadeOutLeft} style={styles.stepContainer}>
+          <Animated.View key="step1" entering={SlideInRight} exiting={SlideOutLeft} style={[styles.stepContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.stepTitle, { color: colors.text }]}>What is your primary goal?</Text>
             <Text style={[styles.stepDesc, { color: colors.textSecondary }]}>
               This helps us customize predictions, logs, and notification reminders.
@@ -146,7 +146,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
 
       case 2:
         return (
-          <Animated.View key="step2" entering={FadeInRight} exiting={FadeOutLeft} style={styles.stepContainer}>
+          <Animated.View key="step2" entering={SlideInRight} exiting={SlideOutLeft} style={[styles.stepContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.stepTitle, { color: colors.text }]}>When did your last period start?</Text>
             <Text style={[styles.stepDesc, { color: colors.textSecondary }]}>
               We use this date as Day 1 to initialize your calendar and compute predictions.
@@ -164,7 +164,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
 
       case 3:
         return (
-          <Animated.View key="step3" entering={FadeInRight} exiting={FadeOutLeft} style={styles.stepContainer}>
+          <Animated.View key="step3" entering={SlideInRight} exiting={SlideOutLeft} style={[styles.stepContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.stepTitle, { color: colors.text }]}>Cycle & Period defaults</Text>
             <Text style={[styles.stepDesc, { color: colors.textSecondary }]}>
               Enter your best estimate. These values auto-recalculate as you log real cycles.
@@ -232,7 +232,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
 
       case 4:
         return (
-          <Animated.View key="step4" entering={FadeInRight} exiting={FadeOutLeft} style={styles.stepContainer}>
+          <Animated.View key="step4" entering={SlideInRight} exiting={SlideOutLeft} style={[styles.stepContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.stepTitle, { color: colors.text }]}>Do you use birth control?</Text>
             <Text style={[styles.stepDesc, { color: colors.textSecondary }]}>
               Adding a birth control method schedules daily reminders and custom streak trackers.
@@ -271,7 +271,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
 
       case 5:
         return (
-          <Animated.View key="step5" entering={FadeInRight} exiting={FadeOutLeft} style={styles.stepContainer}>
+          <Animated.View key="step5" entering={SlideInRight} exiting={SlideOutLeft} style={[styles.stepContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.stepTitle, { color: colors.text }]}>Privacy & Notifications</Text>
             <Text style={[styles.stepDesc, { color: colors.textSecondary }]}>
               Configure your secure settings. CycleSync respects your health privacy.
@@ -469,11 +469,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
   },
   stepContainer: {
-    flex: 1,
-    marginTop: 20,
+    position: 'absolute',
+    top: 20,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 24,
   },
   stepTitle: {
     fontSize: 24,

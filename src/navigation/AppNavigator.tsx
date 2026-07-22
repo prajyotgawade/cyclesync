@@ -30,11 +30,12 @@ const Tab = createBottomTabNavigator<AppTabParamList>();
 
 // --- Auth Stack Navigator ---
 export const AuthNavigator = () => {
+  const { colors } = useTheme();
   return (
     <AuthStack.Navigator 
       screenOptions={{ 
         headerShown: false, 
-        cardStyle: { backgroundColor: 'transparent' },
+        cardStyle: { backgroundColor: colors.background },
         ...TransitionPresets.SlideFromRightIOS,
       }}
     >
@@ -169,8 +170,8 @@ export const AppNavigator = () => {
       <RootStack.Navigator 
         screenOptions={{ 
           headerShown: false,
-          cardStyle: { backgroundColor: 'transparent' },
-          ...TransitionPresets.FadeFromBottomAndroid,
+          cardStyle: { backgroundColor: colors.background },
+          ...TransitionPresets.ModalFadeTransition,
         }}
       >
         <RootStack.Screen name="Splash" component={SplashScreen} />
