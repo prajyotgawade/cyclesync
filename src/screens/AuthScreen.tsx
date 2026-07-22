@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, useWindowDimensions, StatusBar } from 'react-native';
+import { StyleSheet, View, Text, useWindowDimensions, StatusBar, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../hooks/useTheme';
@@ -44,10 +44,14 @@ export const AuthScreen = ({ navigation }: any) => {
         entering={FadeInUp.delay(200).duration(800)}
         style={styles.headerArea}
       >
-        <View style={[styles.logoCircle, { backgroundColor: brandColors.primaryDark }]}>
-          <Ionicons name="water" size={48} color="#FFFFFF" />
+        <View style={styles.logoCircle}>
+          <Image 
+            source={require('../../assets/icon.png')} 
+            style={styles.logoImage} 
+            resizeMode="cover"
+          />
         </View>
-        <Text style={[styles.title, { color: colors.text }]}>CycleSync</Text>
+        <Text style={[styles.title, { color: colors.text }]}>CycleFlow</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Your body, in harmony.
         </Text>
@@ -134,17 +138,19 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   logoCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 130,
+    height: 130,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#7C4DFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 6,
     marginBottom: 16,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    transform: [{ scale: 1.5 }],
   },
   title: {
     fontSize: 32,
