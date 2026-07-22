@@ -32,9 +32,9 @@ const Tab = createBottomTabNavigator<AppTabParamList>();
 export const AuthNavigator = () => {
   const { colors } = useTheme();
   return (
-    <AuthStack.Navigator 
-      screenOptions={{ 
-        headerShown: false, 
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
         cardStyle: { backgroundColor: colors.background },
         ...TransitionPresets.SlideFromRightIOS,
       }}
@@ -113,7 +113,7 @@ export const TabNavigator = () => {
           ),
         }}
       />
-      
+
       {/* Centered Quick-Log Intercept */}
       <Tab.Screen
         name="LogPlaceholder"
@@ -167,8 +167,8 @@ export const AppNavigator = () => {
 
   return (
     <NavigationContainer theme={navTheme}>
-      <RootStack.Navigator 
-        screenOptions={{ 
+      <RootStack.Navigator
+        screenOptions={{
           headerShown: false,
           cardStyle: { backgroundColor: colors.background },
           ...TransitionPresets.ModalFadeTransition,

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+const fs = require('fs');
+
+const code = `import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
@@ -14,7 +16,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 // Reusable Accordion Component
 const AccordionSection = ({ title, icon, summary, isExpanded, onToggle, children, colors, brandColors }: any) => {
   return (
-    <Animated.View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]} layout={LinearTransition.duration(200)}>
+    <Animated.View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]} layout={LinearTransition.springify().damping(16)}>
       <Pressable 
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -241,7 +243,7 @@ export const LogScreen = ({ route, navigation }: any) => {
           <AccordionSection
             title="Flow Intensity"
             icon="water-outline"
-            summary={flow !== 'NONE' ? `${flow.charAt(0) + flow.slice(1).toLowerCase()}` : 'None'}
+            summary={flow !== 'NONE' ? \`\${flow.charAt(0) + flow.slice(1).toLowerCase()}\` : 'None'}
             isExpanded={expandedSections.flow}
             onToggle={() => toggleSection('flow')}
             colors={colors}
@@ -283,7 +285,7 @@ export const LogScreen = ({ route, navigation }: any) => {
           <AccordionSection
             title="Physical Symptoms"
             icon="body-outline"
-            summary={symptoms.length > 0 ? `${symptoms.length} Selected` : ''}
+            summary={symptoms.length > 0 ? \`\${symptoms.length} Selected\` : ''}
             isExpanded={expandedSections.symptoms}
             onToggle={() => toggleSection('symptoms')}
             colors={colors}
@@ -293,16 +295,17 @@ export const LogScreen = ({ route, navigation }: any) => {
               {SYMPTOMS_LIST.map(item => {
                 const isSelected = symptoms.includes(item.id);
                 return (
-                  <Pressable
+                  <AnimatedPressable
                     key={item.id}
                     onPress={() => toggleSymptom(item.id)}
+                    layout={LinearTransition.springify()}
                     style={[
                       styles.chipBtn,
                       { backgroundColor: isSelected ? brandColors.primary : colors.surfaceSecondary },
                     ]}
                   >
                     <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
+                  </AnimatedPressable>
                 );
               })}
             </View>
@@ -312,7 +315,7 @@ export const LogScreen = ({ route, navigation }: any) => {
           <AccordionSection
             title="Emotional State"
             icon="happy-outline"
-            summary={moods.length > 0 ? `${moods.length} Selected` : ''}
+            summary={moods.length > 0 ? \`\${moods.length} Selected\` : ''}
             isExpanded={expandedSections.moods}
             onToggle={() => toggleSection('moods')}
             colors={colors}
@@ -322,16 +325,17 @@ export const LogScreen = ({ route, navigation }: any) => {
               {MOODS_LIST.map(item => {
                 const isSelected = moods.includes(item.id);
                 return (
-                  <Pressable
+                  <AnimatedPressable
                     key={item.id}
                     onPress={() => toggleMood(item.id)}
+                    layout={LinearTransition.springify()}
                     style={[
                       styles.chipBtn,
                       { backgroundColor: isSelected ? brandColors.follicular : colors.surfaceSecondary },
                     ]}
                   >
                     <Text style={[styles.chipText, { color: isSelected ? '#FFF' : colors.text }]}>{item.label}</Text>
-                  </Pressable>
+                  </AnimatedPressable>
                 );
               })}
             </View>
@@ -341,7 +345,7 @@ export const LogScreen = ({ route, navigation }: any) => {
           <AccordionSection
             title="Cervical Fluid"
             icon="leaf-outline"
-            summary={discharge !== 'NONE' ? `${discharge.charAt(0) + discharge.slice(1).toLowerCase().replace('_', ' ')}` : ''}
+            summary={discharge !== 'NONE' ? \`\${discharge.charAt(0) + discharge.slice(1).toLowerCase().replace('_', ' ')}\` : ''}
             isExpanded={expandedSections.discharge}
             onToggle={() => toggleSection('discharge')}
             colors={colors}
@@ -721,3 +725,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+`;
+
+fs.writeFileSync('src/screens/LogScreen.tsx', code);
+console.log('LogScreen totally rebuilt with premium accordion UI!');
