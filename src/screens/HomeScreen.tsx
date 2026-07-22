@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, Platform, StatusBar, Pressable } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Platform, StatusBar, Pressable, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useCycleStore } from '../store/useCycleStore';
@@ -103,7 +103,21 @@ export const HomeScreen = ({ navigation }: any) => {
   const advice = getPhaseAdvice();
 
   const handleQuickLog = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate('LogModal', { date: todayStr });
+  };
+
+  const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const message = `Hi! I'm currently in the ${dashboard.phase} phase of my cycle on CycleSync. (Day ${dashboard.dayOfCycle} of ${dashboard.cycleLength})`;
+      await Share.share({
+        message,
+        title: 'My Cycle Phase',
+      });
+    } catch (error) {
+      console.log('Error sharing', error);
+    }
   };
 
   const handleSeedPress = () => {
@@ -163,6 +177,13 @@ export const HomeScreen = ({ navigation }: any) => {
             onPress={handleQuickLog}
             variant={todaysLog && todaysLog.flow !== 'NONE' ? "outline" : "primary"}
             icon={<Ionicons name="medical-outline" size={18} color={todaysLog && todaysLog.flow !== 'NONE' ? brandColors.primaryDark : '#FFF'} />}
+          />
+          <Button
+            title="Share Phase with Partner"
+            onPress={handleShare}
+            variant="outline"
+            style={{ marginTop: 12 }}
+            icon={<Ionicons name="heart-outline" size={18} color={brandColors.primaryDark} />}
           />
         </View>
 

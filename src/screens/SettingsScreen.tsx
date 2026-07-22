@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Modal } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useCycleStore } from '../store/useCycleStore';
@@ -7,6 +7,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { exportToPDF, exportToCSV } from '../services/export';
+import { backupDataToCloud, downloadDataFromCloud } from '../services/supabase';
 import { formatLocalDate, addDaysToDate } from '../utils/predictions';
 import * as Haptics from 'expo-haptics';
 
@@ -34,6 +35,7 @@ export const SettingsScreen = ({ navigation }: any) => {
   const [profileName, setProfileName] = useState(currentProfile?.name || '');
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [backupLoading, setBackupLoading] = useState(false);
 
   // App Lock local configuration
   const [wantsPin, setWantsPin] = useState(pinCode !== null);
@@ -88,6 +90,41 @@ export const SettingsScreen = ({ navigation }: any) => {
       console.error(err);
     } finally {
       setExportLoading(false);
+    }
+  };
+
+  const handleBackup = async () => {
+    if (!currentProfile) return;
+    setBackupLoading(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const res = await backupDataToCloud(currentProfile, cycles, dailyLogs);
+      if (res.success) {
+        Alert.alert('Backup Successful', 'Your data is securely stored in Supabase.');
+      } else {
+        Alert.alert('Backup Failed', res.error || 'Check your Supabase credentials.');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    setBackupLoading(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const res = await downloadDataFromCloud();
+      if (res.success && res.profile) {
+        Alert.alert('Restore Successful', 'Please restart the app to load your restored data.');
+      } else {
+        Alert.alert('Restore Failed', res.error || 'No backup found or missing credentials.');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setBackupLoading(false);
     }
   };
 
@@ -331,7 +368,32 @@ export const SettingsScreen = ({ navigation }: any) => {
           </View>
         </Card>
 
-        {/* 5. Medical Reports Export */}
+        {/* 5. Cloud Backup */}
+        <Card style={styles.settingsCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Cloud Backup & Sync</Text>
+          <Text style={[styles.switchDesc, { color: colors.textSecondary, marginBottom: 12 }]}>
+            Securely backup your cycles to Supabase so you never lose your data if you change phones.
+          </Text>
+
+          <Button
+            title="Backup to Cloud"
+            onPress={handleBackup}
+            variant="primary"
+            loading={backupLoading}
+            icon={<Ionicons name="cloud-upload-outline" size={18} color="#FFF" />}
+            style={styles.exportBtn}
+          />
+          <Button
+            title="Restore from Cloud"
+            onPress={handleRestore}
+            variant="outline"
+            loading={backupLoading}
+            icon={<Ionicons name="cloud-download-outline" size={18} color={brandColors.primaryDark} />}
+            style={styles.exportBtn}
+          />
+        </Card>
+
+        {/* 6. Medical Reports Export */}
         <Card style={styles.settingsCard}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Data Export & Reports</Text>
           <Text style={[styles.switchDesc, { color: colors.textSecondary, marginBottom: 12 }]}>

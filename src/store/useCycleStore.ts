@@ -25,6 +25,7 @@ import {
 } from '../utils/predictions';
 import { seedMockData } from '../db/seed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../services/supabase';
 
 interface AuthSession {
   user: {
@@ -116,7 +117,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
         set({ session, isAuthenticated: true });
         
         // Load data for active profile
-        const profileId = 'primary_user'; // fallback for default single user
+        const profileId = session.user.id || 'primary_user'; // use authenticated user id
         let profile = getProfile(profileId);
         
         if (!profile) {
@@ -197,14 +198,25 @@ export const useCycleStore = create<CycleState>((set, get) => ({
   },
 
   loginWithGoogleMock: async (name: string, email: string) => {
+    let userId = 'primary_user';
+    let token = 'mock_google_oauth_token';
+
+    if (supabase) {
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (!error && data.user) {
+        userId = data.user.id;
+        token = data.session?.access_token || token;
+      }
+    }
+
     const mockSession: AuthSession = {
       user: {
-        id: 'primary_user',
+        id: userId,
         email,
         name,
         avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120',
       },
-      accessToken: 'mock_google_oauth_token',
+      accessToken: token,
     };
 
     await AsyncStorage.setItem('@cyclesync_session', JSON.stringify(mockSession));
@@ -215,7 +227,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
     });
 
     // Hydrate tables for new profile
-    const profileId = 'primary_user';
+    const profileId = userId;
     let profile = getProfile(profileId);
     if (!profile) {
       profile = {
