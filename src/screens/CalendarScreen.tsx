@@ -90,7 +90,7 @@ export const CalendarScreen = ({ navigation }: any) => {
 
         {/* Details Card for Selected Date */}
         <Card style={styles.detailsCard}>
-          <View style={styles.cardHeader}>
+          <View style={[styles.cardHeader, { borderBottomColor: colors.border }]}>
             <View>
               <Text style={[styles.dateLabel, { color: colors.textSecondary }]}>
                 {new Date(selectedDate).toLocaleDateString(undefined, {
@@ -233,7 +233,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E0EC',
     paddingBottom: 12,
     marginBottom: 12,
   },

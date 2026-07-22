@@ -140,7 +140,7 @@ export const SettingsScreen = ({ navigation }: any) => {
 
           <View style={styles.inputCol}>
             <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Primary Goal</Text>
-            <View style={styles.segmentedControl}>
+            <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceSecondary }]}>
               {[
                 { id: 'TRACK', label: 'Track' },
                 { id: 'AVOID', label: 'Avoid' },
@@ -175,7 +175,7 @@ export const SettingsScreen = ({ navigation }: any) => {
           </View>
 
           {/* Fertility Mode Toggle */}
-          <View style={styles.switchRow}>
+          <View style={[styles.switchRow, { borderTopColor: colors.border }]}>
             <View style={styles.switchLabelCol}>
               <Text style={[styles.fieldLabel, { color: colors.text }]}>Fertility Mode (BBT Charts)</Text>
               <Text style={[styles.switchDesc, { color: colors.textSecondary }]}>
@@ -242,7 +242,7 @@ export const SettingsScreen = ({ navigation }: any) => {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Birth Control Tracker</Text>
           <View style={styles.inputCol}>
             <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Contraceptive Method</Text>
-            <View style={styles.segmentedControlScroll}>
+            <View style={[styles.segmentedControlScroll, { backgroundColor: colors.surfaceSecondary }]}>
               {[
                 { id: 'NONE', label: 'None' },
                 { id: 'PILL', label: 'Pill' },
@@ -281,7 +281,7 @@ export const SettingsScreen = ({ navigation }: any) => {
           {/* Theme segment selector */}
           <View style={styles.inputCol}>
             <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 8 }]}>Theme Preferences</Text>
-            <View style={styles.segmentedControl}>
+            <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceSecondary }]}>
               {[
                 { id: 'light', label: 'Light' },
                 { id: 'dark', label: 'Dark' },
@@ -312,7 +312,7 @@ export const SettingsScreen = ({ navigation }: any) => {
           </View>
 
           {/* Secure PIN Lock Toggle */}
-          <View style={styles.switchRow}>
+          <View style={[styles.switchRow, { borderTopColor: colors.border }]}>
             <View style={styles.switchLabelCol}>
               <Text style={[styles.fieldLabel, { color: colors.text }]}>Security App Lock PIN</Text>
               <Text style={[styles.switchDesc, { color: colors.textSecondary }]}>
@@ -485,7 +485,7 @@ export const SettingsScreen = ({ navigation }: any) => {
       <Modal visible={showPrivacyModal} animationType="slide" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContainerFull, { backgroundColor: colors.surface }]}>
-            <View style={styles.modalFullHeader}>
+            <View style={[styles.modalFullHeader, { borderBottomColor: colors.border }]}>
               <Text style={[styles.modalFullTitle, { color: colors.text }]}>Privacy & Encryption Policy</Text>
               <Pressable
                 onPress={() => setShowPrivacyModal(false)}
@@ -567,7 +567,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#FAF6FC',
     padding: 2,
   },
   segmentBtn: {
@@ -583,7 +582,6 @@ const styles = StyleSheet.create({
   segmentedControlScroll: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#FAF6FC',
     borderRadius: 10,
     padding: 2,
   },
@@ -604,7 +602,6 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E5E0EC',
   },
   switchLabelCol: {
     flex: 1,
@@ -751,7 +748,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E0EC',
     paddingBottom: 16,
     marginBottom: 16,
   },

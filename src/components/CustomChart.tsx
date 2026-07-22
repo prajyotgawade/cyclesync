@@ -255,7 +255,7 @@ export const BarChart: React.FC<BarChartProps> = ({ data, maxVal, height = 150 }
 
           return (
             <View key={idx} style={styles.barCol}>
-              <View style={styles.barTrack}>
+              <View style={[styles.barTrack, { backgroundColor: colors.surfaceSecondary }]}>
                 <AnimatedView
                   style={[
                     styles.barFill,
@@ -328,7 +328,6 @@ const styles = StyleSheet.create({
   barTrack: {
     width: 28,
     height: '80%',
-    backgroundColor: '#FAF6FC',
     borderRadius: 8,
     overflow: 'hidden',
     justifyContent: 'flex-end',

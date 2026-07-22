@@ -327,8 +327,8 @@ export const OnboardingScreen = ({ navigation }: any) => {
                 </View>
 
                 {wantsPin && (
-                  <View style={styles.pinEntryWrapper}>
-                    <Text style={[styles.pinLabel, { color: colors.text }]}>Set 4-Digit PIN Code:</Text>
+                  <View style={[styles.pinEntryWrapper, { borderTopColor: colors.border }]}>
+                    <Text style={[styles.fieldLabel, { color: colors.text, marginBottom: 12 }]}>Set a 4-digit PIN</Text>
                     <View style={styles.pinInputRow}>
                       {[0, 1, 2, 3].map(i => (
                         <Pressable
@@ -632,7 +632,6 @@ const styles = StyleSheet.create({
   pinEntryWrapper: {
     marginTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E5E0EC',
     paddingTop: 16,
     alignItems: 'center',
   },
