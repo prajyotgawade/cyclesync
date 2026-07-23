@@ -9,26 +9,105 @@ import { useCycleStore } from '../store/useCycleStore';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
+import { makeRedirectUri } from 'expo-auth-session';
+import * as QueryParams from 'expo-auth-session/build/QueryParams';
+import { supabase } from '../services/supabase';
+
+WebBrowser.maybeCompleteAuthSession();
+
 export const AuthScreen = ({ navigation }: any) => {
   const { colors, brandColors } = useTheme();
   const { width } = useWindowDimensions();
-  const loginWithGoogleMock = useCycleStore(state => state.loginWithGoogleMock);
+  const loginWithRealGoogle = useCycleStore(state => state.loginWithRealGoogle);
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    // Simulate OAuth delay
-    setTimeout(async () => {
-      try {
-        await loginWithGoogleMock('Jane Doe', 'jane.doe@gmail.com');
-        setLoading(false);
-        // After login, route to Onboarding flow
-        navigation.navigate('Onboarding');
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
+    try {
+      if (!supabase) {
+        throw new Error('Supabase is not configured');
       }
-    }, 1500);
+
+      const redirectTo = makeRedirectUri();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+          queryParams: {
+            prompt: 'select_account',
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        if (res.type === 'success') {
+          const { url } = res;
+          
+          // Fallback parsing for hash fragment because Supabase puts tokens in the hash
+          let access_token = '';
+          let refresh_token = '';
+          
+          try {
+            const { params, errorCode } = QueryParams.getQueryParams(url);
+            if (errorCode) throw new Error(errorCode);
+            access_token = params.access_token;
+            refresh_token = params.refresh_token;
+          } catch (e) {
+            console.log('QueryParams error:', e);
+          }
+
+          if (!access_token && url.includes('#')) {
+            const hash = url.split('#')[1];
+            const hashParams = hash.split('&').reduce((acc, current) => {
+              const [key, value] = current.split('=');
+              acc[key] = decodeURIComponent(value);
+              return acc;
+            }, {} as Record<string, string>);
+            
+            access_token = access_token || hashParams.access_token;
+            refresh_token = refresh_token || hashParams.refresh_token;
+          }
+
+          if (!access_token) {
+             throw new Error('Authentication failed: No access token returned from Google.');
+          }
+
+          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+          
+          if (sessionError) throw sessionError;
+
+          const user = sessionData?.session?.user;
+          if (user) {
+            await loginWithRealGoogle(
+              user.id,
+              user.user_metadata?.full_name || 'User',
+              user.email || '',
+              user.user_metadata?.avatar_url || '',
+              access_token
+            );
+            navigation.navigate('Onboarding');
+          } else {
+            throw new Error('User data not found in session.');
+          }
+        } else if (res.type !== 'cancel') {
+          throw new Error('Auth session failed with type: ' + res.type);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Google Sign-In Failed: ' + (err as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -59,7 +59,7 @@ interface CycleState {
   initializeApp: () => Promise<void>;
   seedDemo: () => void;
   clearAllData: () => void;
-  loginWithGoogleMock: (name: string, email: string) => Promise<void>;
+  loginWithRealGoogle: (id: string, name: string, email: string, avatarUrl: string, token: string) => Promise<void>;
   logout: () => Promise<void>;
 
   // App Lock Actions
@@ -197,24 +197,15 @@ export const useCycleStore = create<CycleState>((set, get) => ({
     });
   },
 
-  loginWithGoogleMock: async (name: string, email: string) => {
-    let userId = 'primary_user';
-    let token = 'mock_google_oauth_token';
-
-    if (supabase) {
-      const { data, error } = await supabase.auth.signInAnonymously();
-      if (!error && data.user) {
-        userId = data.user.id;
-        token = data.session?.access_token || token;
-      }
-    }
+  loginWithRealGoogle: async (id: string, name: string, email: string, avatarUrl: string, token: string) => {
+    const userId = id;
 
     const mockSession: AuthSession = {
       user: {
         id: userId,
         email,
         name,
-        avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120',
+        avatarUrl: avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120',
       },
       accessToken: token,
     };

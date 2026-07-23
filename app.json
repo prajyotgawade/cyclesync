@@ -2,6 +2,7 @@
   "expo": {
     "name": "cyclesync",
     "slug": "cyclesync",
+    "scheme": "cyclesync",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,7 +26,8 @@
     },
     "plugins": [
       "expo-sqlite",
-      "expo-font"
+      "expo-font",
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {
