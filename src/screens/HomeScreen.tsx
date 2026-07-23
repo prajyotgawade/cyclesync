@@ -17,13 +17,8 @@ export const HomeScreen = ({ navigation }: any) => {
   const cycles = useCycleStore(state => state.cycles);
   const dailyLogs = useCycleStore(state => state.dailyLogs);
   const predictions = useCycleStore(state => state.predictions);
-  const seedDemo = useCycleStore(state => state.seedDemo);
 
   const todayStr = formatLocalDate(new Date());
-
-  // Check if we need to show the "Seed Demo Data" callout
-  // We show it if the user has only 1 period logged (the onboarding estimate) and no other days
-  const showSeedBanner = cycles.filter(c => !c.is_predicted).length < 2;
 
   // Retrieve today's logged details if any
   const todaysLog = dailyLogs.find(l => l.date === todayStr);
@@ -120,9 +115,7 @@ export const HomeScreen = ({ navigation }: any) => {
     }
   };
 
-  const handleSeedPress = () => {
-    seedDemo();
-  };
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -144,22 +137,6 @@ export const HomeScreen = ({ navigation }: any) => {
           )}
         </View>
 
-        {/* Demo Data Seeder Banner */}
-        {showSeedBanner && (
-          <Pressable onPress={handleSeedPress} style={styles.seedBannerPressable}>
-            <Card hasShadow={false} style={[styles.seedBanner, { backgroundColor: brandColors.primary + '15', borderColor: brandColors.primary }]}>
-              <View style={styles.seedBannerRow}>
-                <Ionicons name="sparkles" size={20} color={brandColors.primaryDark} />
-                <View style={styles.seedBannerTextWrapper}>
-                  <Text style={[styles.seedTitle, { color: colors.text }]}>Seed Demo History</Text>
-                  <Text style={[styles.seedDesc, { color: colors.textSecondary }]}>
-                    Tap to instantly populate 6 months of period records and symptoms. Perfect for exploring graphs!
-                  </Text>
-                </View>
-              </View>
-            </Card>
-          </Pressable>
-        )}
 
         {/* Circular Progress Ring Widget */}
         <CycleRing
@@ -274,31 +251,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textTransform: 'uppercase',
   },
-  // Seed Banner
-  seedBannerPressable: {
-    marginVertical: 4,
-  },
-  seedBanner: {
-    borderWidth: 1,
-    padding: 14,
-  },
-  seedBannerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  seedBannerTextWrapper: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  seedTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  seedDesc: {
-    fontSize: 11,
-    lineHeight: 15,
-  },
+
   quickLogArea: {
     width: '100%',
     marginVertical: 8,

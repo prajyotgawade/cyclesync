@@ -42,7 +42,7 @@ interface CycleState {
   session: AuthSession | null;
   isAuthenticated: boolean;
   isInitialized: boolean;
-  
+
   // App Lock
   pinCode: string | null;
   isAppLocked: boolean;
@@ -61,7 +61,7 @@ interface CycleState {
   clearAllData: () => void;
   loginWithGoogleMock: (name: string, email: string) => Promise<void>;
   logout: () => Promise<void>;
-  
+
   // App Lock Actions
   setPinCode: (pin: string | null) => Promise<void>;
   unlockApp: () => void;
@@ -102,7 +102,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
       const storedSession = await AsyncStorage.getItem('@cyclesync_session');
       const storedTheme = await AsyncStorage.getItem('@cyclesync_theme') as 'light' | 'dark' | 'system' | null;
       const storedPin = await AsyncStorage.getItem('@cyclesync_pincode');
-      
+
       const themeSetting = storedTheme || 'system';
       const pinSetting = storedPin || null;
 
@@ -115,11 +115,11 @@ export const useCycleStore = create<CycleState>((set, get) => ({
       if (storedSession) {
         const session: AuthSession = JSON.parse(storedSession);
         set({ session, isAuthenticated: true });
-        
+
         // Load data for active profile
         const profileId = session.user.id || 'primary_user'; // use authenticated user id
         let profile = getProfile(profileId);
-        
+
         if (!profile) {
           // Create default profile if none exists
           profile = {
@@ -139,7 +139,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
         const profiles = getProfiles();
         const cycles = getCycles(profileId);
         const dailyLogs = getDailyLogs(profileId);
-        
+
         const predictions = calculatePredictions(
           cycles,
           profile.average_cycle_length,
@@ -170,7 +170,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
     const profiles = getProfiles();
     const cycles = getCycles(profileId);
     const dailyLogs = getDailyLogs(profileId);
-    
+
     const predictions = profile ? calculatePredictions(
       cycles,
       profile.average_cycle_length,
@@ -220,7 +220,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
     };
 
     await AsyncStorage.setItem('@cyclesync_session', JSON.stringify(mockSession));
-    
+
     set({
       session: mockSession,
       isAuthenticated: true,
@@ -296,7 +296,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
     };
 
     saveProfile(updated);
-    
+
     // Refresh calculations using new averages
     const cycles = getCycles(updated.id);
     const predictions = calculatePredictions(
@@ -338,7 +338,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
 
     // Check if log already exists
     const existingLog = dailyLogs.find(l => l.date === logFields.date);
-    
+
     const newLog: DailyLog = {
       date: logFields.date,
       profile_id: currentProfile.id,
@@ -364,19 +364,19 @@ export const useCycleStore = create<CycleState>((set, get) => ({
       const targetDate = newLog.date;
       const sortedCycles = [...cycles].filter(c => !c.is_predicted)
         .sort((a, b) => a.start_date.localeCompare(b.start_date));
-      
+
       let associated = false;
 
       for (const cycle of sortedCycles) {
         const startDiff = getDaysDifference(targetDate, cycle.start_date);
-        
+
         // Date is inside or very close to an existing cycle
         if (cycle.end_date) {
           if (targetDate >= cycle.start_date && targetDate <= cycle.end_date) {
             associated = true;
             break;
           }
-          
+
           // Close to end date -> extend end date
           const endDiff = getDaysDifference(targetDate, cycle.end_date);
           if (endDiff > 0 && endDiff <= 3) {
@@ -433,7 +433,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
 
     deleteDailyLog(date, currentProfile.id);
     const updatedLogs = getDailyLogs(currentProfile.id);
-    
+
     set({
       dailyLogs: updatedLogs,
     });
@@ -451,7 +451,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
     };
 
     saveCycle(newCycle, currentProfile.id);
-    
+
     const updatedCycles = getCycles(currentProfile.id);
     const predictions = calculatePredictions(
       updatedCycles,
@@ -477,7 +477,7 @@ export const useCycleStore = create<CycleState>((set, get) => ({
     };
 
     saveCycle(cycle, currentProfile.id);
-    
+
     const updatedCycles = getCycles(currentProfile.id);
     const predictions = calculatePredictions(
       updatedCycles,
