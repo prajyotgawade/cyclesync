@@ -265,12 +265,14 @@ export const BarChart: React.FC<BarChartProps> = ({ data, maxVal, height = 150 }
                 />
               </View>
               <Text style={[styles.barValueText, { color: colors.text }]}>{item.count}</Text>
-              <Text
-                numberOfLines={2}
-                style={[styles.barLabelText, { color: colors.textSecondary }]}
-              >
-                {item.label}
-              </Text>
+              <View style={{ height: 26, justifyContent: 'flex-start', width: '100%' }}>
+                <Text
+                  numberOfLines={2}
+                  style={[styles.barLabelText, { color: colors.textSecondary }]}
+                >
+                  {item.label}
+                </Text>
+              </View>
             </View>
           );
         })}
