@@ -168,17 +168,9 @@ export const SplashScreen = ({ navigation }: any) => {
     );
   }
 
-  // Render standard Loading Splash during transitions or initialization
+  // Render a blank screen during transitions or initialization (covered by native splash screen)
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
-        <View style={[styles.logoCircle, { backgroundColor: brandColors.primary }]}>
-          <Ionicons name="water" size={60} color="#FFFFFF" />
-        </View>
-      </Animated.View>
-      <Text style={[styles.logoText, { color: colors.text }]}>CycleSync</Text>
-      <ActivityIndicator size="small" color={brandColors.primaryDark} style={styles.loader} />
-    </SafeAreaView>
+    <View style={[styles.container, { backgroundColor: colors.background }]} />
   );
 };
 
