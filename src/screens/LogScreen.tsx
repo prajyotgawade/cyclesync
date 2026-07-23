@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useCycleStore } from '../store/useCycleStore';
@@ -116,10 +117,13 @@ export const LogScreen = ({ route, navigation }: any) => {
     if (navigation.canGoBack()) navigation.goBack();
   };
 
-  const KeyboardWrapper = Platform.OS === 'ios' ? KeyboardAvoidingView : View as any;
+  const KeyboardWrapper = Platform.OS === 'ios' ? KeyboardAvoidingView : (View as any);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+    <KeyboardWrapper 
+      style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       
       <ScrollView
         style={styles.scrollView}
@@ -416,7 +420,7 @@ export const LogScreen = ({ route, navigation }: any) => {
         </View>
       </View>
 
-    </View>
+    </KeyboardWrapper>
   );
 };
 
@@ -425,6 +429,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 12,
     paddingTop: 12,
     paddingBottom: 24,
