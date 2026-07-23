@@ -30,7 +30,9 @@ export const AuthScreen = ({ navigation }: any) => {
         throw new Error('Supabase is not configured');
       }
 
-      const redirectTo = makeRedirectUri();
+      const redirectTo = makeRedirectUri({
+        native: 'cyclesync://auth',
+      });
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -75,7 +77,7 @@ export const AuthScreen = ({ navigation }: any) => {
           }
 
           if (!access_token) {
-             throw new Error('Authentication failed: No access token returned from Google.');
+             throw new Error('No access token. URL was: ' + url);
           }
 
           const { data: sessionData, error: sessionError } = await supabase.auth.setSession({

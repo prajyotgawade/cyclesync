@@ -99,85 +99,85 @@ export const SplashScreen = ({ navigation }: any) => {
     setPinError(false);
   };
 
-  // Render standard Loading Splash
-  if (!isInitialized || (isAuthenticated && pinCode && !isAppLocked)) {
+  // Render Secure PIN Lock Screen ONLY if locked
+  if (isInitialized && isAuthenticated && pinCode && isAppLocked) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
-          <View style={[styles.logoCircle, { backgroundColor: brandColors.primary }]}>
-            <Ionicons name="water" size={60} color="#FFFFFF" />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'space-around' }]}>
+        <View style={styles.lockHeader}>
+          <Ionicons name="lock-closed" size={36} color={brandColors.primaryDark} />
+          <Text style={[styles.lockTitle, { color: colors.text }]}>Enter PIN Code</Text>
+          <Text style={[styles.lockSubtitle, { color: colors.textSecondary }]}>
+            CycleSync is locked to protect your health privacy.
+          </Text>
+
+          {/* PIN Indicators */}
+          <Animated.View style={[styles.pinDotsRow, pinPadAnimatedStyle]}>
+            {[0, 1, 2, 3].map(idx => {
+              const filled = enteredPin.length > idx;
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.pinDot,
+                    { borderColor: pinError ? brandColors.accentDark : brandColors.primaryDark },
+                    filled && { backgroundColor: pinError ? brandColors.accentDark : brandColors.primaryDark },
+                  ]}
+                />
+              );
+            })}
+          </Animated.View>
+        </View>
+
+        {/* 3x4 Grid Pin Pad */}
+        <View style={styles.pinPad}>
+          {[
+            ['1', '2', '3'],
+            ['4', '5', '6'],
+            ['7', '8', '9'],
+          ].map((row, rowIdx) => (
+            <View key={rowIdx} style={styles.pinRow}>
+              {row.map(num => (
+                <Pressable
+                  key={num}
+                  onPress={() => handleKeyPress(num)}
+                  style={[styles.pinKey, { backgroundColor: colors.surface }]}
+                >
+                  <Text style={[styles.pinKeyText, { color: colors.text }]}>{num}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ))}
+          {/* Bottom Keypad Row */}
+          <View style={styles.pinRow}>
+            <View style={styles.pinKeyPlaceholder} />
+            <Pressable
+              onPress={() => handleKeyPress('0')}
+              style={[styles.pinKey, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.pinKeyText, { color: colors.text }]}>0</Text>
+            </Pressable>
+            <Pressable
+              onPress={handleDelete}
+              style={[styles.pinKey, { backgroundColor: brandColors.primaryLight, shadowOpacity: 0, elevation: 0 }]}
+            >
+              <Ionicons name="backspace" size={24} color={brandColors.primaryDark} />
+            </Pressable>
           </View>
-        </Animated.View>
-        <Text style={[styles.logoText, { color: colors.text }]}>CycleSync</Text>
-        <ActivityIndicator size="small" color={brandColors.primaryDark} style={styles.loader} />
+        </View>
       </SafeAreaView>
     );
   }
 
-  // Render Secure PIN Lock Screen
+  // Render standard Loading Splash during transitions or initialization
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'space-around' }]}>
-      <View style={styles.lockHeader}>
-        <Ionicons name="lock-closed" size={36} color={brandColors.primaryDark} />
-        <Text style={[styles.lockTitle, { color: colors.text }]}>Enter PIN Code</Text>
-        <Text style={[styles.lockSubtitle, { color: colors.textSecondary }]}>
-          CycleSync is locked to protect your health privacy.
-        </Text>
-
-        {/* PIN Indicators */}
-        <Animated.View style={[styles.pinDotsRow, pinPadAnimatedStyle]}>
-          {[0, 1, 2, 3].map(idx => {
-            const filled = enteredPin.length > idx;
-            return (
-              <View
-                key={idx}
-                style={[
-                  styles.pinDot,
-                  { borderColor: pinError ? brandColors.accentDark : brandColors.primaryDark },
-                  filled && { backgroundColor: pinError ? brandColors.accentDark : brandColors.primaryDark },
-                ]}
-              />
-            );
-          })}
-        </Animated.View>
-      </View>
-
-      {/* 3x4 Grid Pin Pad */}
-      <View style={styles.pinPad}>
-        {[
-          ['1', '2', '3'],
-          ['4', '5', '6'],
-          ['7', '8', '9'],
-        ].map((row, rowIdx) => (
-          <View key={rowIdx} style={styles.pinRow}>
-            {row.map(num => (
-              <Pressable
-                key={num}
-                onPress={() => handleKeyPress(num)}
-                style={[styles.pinKey, { backgroundColor: colors.surface }]}
-              >
-                <Text style={[styles.pinKeyText, { color: colors.text }]}>{num}</Text>
-              </Pressable>
-            ))}
-          </View>
-        ))}
-        {/* Bottom Keypad Row */}
-        <View style={styles.pinRow}>
-          <View style={styles.pinKeyPlaceholder} />
-          <Pressable
-            onPress={() => handleKeyPress('0')}
-            style={[styles.pinKey, { backgroundColor: colors.surface }]}
-          >
-            <Text style={[styles.pinKeyText, { color: colors.text }]}>0</Text>
-          </Pressable>
-          <Pressable
-            onPress={handleDelete}
-            style={[styles.pinKey, { backgroundColor: brandColors.primaryLight, shadowOpacity: 0, elevation: 0 }]}
-          >
-            <Ionicons name="backspace" size={24} color={brandColors.primaryDark} />
-          </Pressable>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
+        <View style={[styles.logoCircle, { backgroundColor: brandColors.primary }]}>
+          <Ionicons name="water" size={60} color="#FFFFFF" />
         </View>
-      </View>
+      </Animated.View>
+      <Text style={[styles.logoText, { color: colors.text }]}>CycleSync</Text>
+      <ActivityIndicator size="small" color={brandColors.primaryDark} style={styles.loader} />
     </SafeAreaView>
   );
 };
